@@ -1,0 +1,85 @@
+<#include "/admin/common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>商品管理</a></li>
+<li><a>商品活动管理</a></li>
+<li class="active"><strong>${(activity.name)!}</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script>
+    var editUrl = "${basePath}/admin/product/activity/addType.html";
+    var delUrl = "${basePath}/admin/product/activity/deleteObject.html";
+    var area = ['540px', '600px'];
+
+    var dataUrl = "${basePath}/admin/product/activity/objectList.html?id=${id?c}";
+    var dataColumns = [{
+        title: '类型',
+        formatter: function (value, row, index) {
+            var type = row.type;
+            if (type == 0) {
+                return "sku名称";
+            } else if (type == 1) {
+                return "商品分类";
+            } else if (type == 2) {
+                return "商品品牌";
+            }
+        }
+    }, {
+        field: 'name',
+        title: '名称'
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-danger" onclick="delEntity(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> ';
+        }
+    }];
+    function addObject(id,type) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                type: 2,
+                title:"添加具体商品",
+                shadeClose: false,
+                shade: 0.8,
+                area: ['700px', '600px'],
+                fix: false,
+                maxmin: true,
+                content: "${basePath}/admin/product/activity/addObject?id="+id+"&type="+type
+            });
+        })
+    }
+</script>
+</#macro>
+<@framework title="选择参与活动商品">
+<div class="row">
+    <form id="searchForm" class="ibox-content text-right form-inline" onsubmit="javascript:return false;">
+        <div class="input-group">
+			<span class="input-group-addon">
+				名称
+			</span>
+            <input type="text" name="name" class="form-control">
+        </div>
+        <button class="btn btn-primary" onclick="_search()" type="button"><i class="fa fa-pencil"></i>&nbsp;搜索
+        </button>
+        <button class="btn btn-primary" onclick="addObject('${activity.id?c}',0)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加分类品牌
+        </button>
+        <button class="btn btn-primary" onclick="addObject('${activity.id?c}',1)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加参与商品
+        </button>
+    </form>
+    <div class="row">
+        <div class="col-sm-12">
+            <table id="dataTable"></table>
+        </div>
+    </div>
+</@framework>

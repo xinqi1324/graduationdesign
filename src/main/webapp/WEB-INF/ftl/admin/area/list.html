@@ -1,0 +1,303 @@
+<#include "../common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+<link rel="stylesheet" href="${basePath}/static/plugins/layui/css/layui.css" media="all">
+</#macro>
+<#macro breadcrumb>
+<li><a>权限管理</a></li>
+<li class="active"><strong>区域管理</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script type="text/javascript">
+    var nowId;
+    var form;
+    var editFlag = false;
+    var addFlag = false;
+    function getAreas(areaId) {
+        $.ajax({
+            data: {areaId: areaId},
+            dataType: "json",
+            type: "post",
+            url: "${basePath}/sys/perm/area/getAreas",
+            success: function (data) {
+                $("#areaTbody").empty();
+                var cities = data.data;
+                var province = cities.pop();
+                var provinceTr = "<tr><td>" + province.areaName + "（当前省份）</td>" +
+                        "<td><a onclick='addArea(\"" + province.id + "\",this)'>添加区域</a>" +
+                        "<a style='margin-left:10px;' href='javascript:void(0);' " +
+                        "onclick='editArea(\"" + province.id + "\",this,\"" + province.areaName + "\")'>修改</a>" +
+                        "<a style='margin-left:10px;' href='javascript:void(0);' onclick='deleteArea(\"" + province.id + "\"," + province.level + ")'>删除</a></td></tr>";
+                $("#areaTbody").append(provinceTr);
+                $(cities).each(function (index, city) {
+                    var area = "<tr><td><a href='javascript:void(0);' onclick='showChildArea(\"" + city.id + "\")'>" + city.areaName + "</a></td>" +
+                            "<td><a href='javascript:void(0);' onclick='editArea(\"" + city.id + "\",this,\"" + city.areaName + "\")'>修改</a>" +
+                            "<a style='margin-left:10px;' href='javascript:void(0);' onclick='deleteArea(\"" + city.id + "\")'>删除</a></td></tr>";
+                    $("#areaTbody").append(area);
+                })
+            },
+            error: function () {
+                layer.msg("获取失败！")
+            }
+        });
+    }
+    layui.use('form', function () {
+        form = layui.form();
+        getAreas(2);
+        nowId = 2;
+        form.on('select(province)', function (option) {
+            var areaId = option.value;
+            nowId = areaId;
+            getAreas(nowId)
+            form.render();
+        });
+    });
+
+    function addArea(areaId, area) {
+        if (!addFlag) {
+            addFlag = true;
+            $("#areaTbody").prepend("<tr><td colspasn='2'><div class='layui-input-inline'>" +
+                    "<input class='layui-input' type='text' placeholder='请输入添加的区域名称'>" +
+                    "</div><button class='btn btn-primary' onclick='doAdd(this,\"" + areaId + "\")' style='margin-left: 20px;'>确定</button>" +
+                    "<button class='btn btn-primary' onclick='cancelAdd(this)' style='margin-left: 10px;'>取消</button>" +
+                    "</td></tr>");
+            form.render();
+        }
+    }
+    function cancelAdd(item) {
+        var pTr = $(item).parents("tr");
+        pTr.remove();
+        addFlag = false;
+    }
+    function doAdd(item, areaId) {
+        var areaName = $(item).prev().find("input").val();
+        if (areaName.length < 1) {
+            layer.msg("添加的区域名称不能为空！");
+            return;
+        }
+        $.ajax({
+            data: {parentId: areaId, areaName: areaName},
+            dataType: "json",
+            type: "post",
+            url: "${basePath}/sys/perm/area/doEdit",
+            success: function (data) {
+                if (data.success) {
+                    showChildArea(nowId);
+                    addFlag = false;
+                } else {
+                    layer.msg("异常错误！");
+                }
+            },
+            error: function () {
+                layer.msg("未知错误！");
+            }
+        });
+    }
+    function showChildArea(id) {
+        nowId = id;
+        $.ajax({
+            data: {areaId: id},
+            dataType: "json",
+            type: "post",
+            url: "${basePath}/sys/perm/area/getAreas",
+            success: function (data) {
+                addFlag = false;
+                var areas = data.data;
+                $("#areaTbody").empty();
+                //移除最后一个父级
+                var pArea = areas.pop();
+                //判断是否为市级，如果为市级则展示市级下所有区域
+                if (pArea.level == 2) {
+                    var pAreaTt = "<tr><td colspan='2'><a style='margin-left: 10px;' onclick='addArea(\"" + pArea.id + "\",this)'>添加区域</a>" +
+                            "<a href='javascript:void(0);' onclick='showChildArea(\"" + pArea.parentId + "\")'>返回上一级</a>" +
+                            "</td></tr>";
+                    $("#areaTbody").append(pAreaTt);
+                    $(areas).each(function (index, area) {
+                        var areaTr = "<tr><td>" + area.areaName + "</td>" +
+                                "<td><a href='javascript:void(0);' onclick='editArea(\"" + area.id + "\",this,\"" + area.areaName + "\")'>修改</a>" +
+                                "<a style='margin-left:10px;' href='javascript:void(0);' onclick='deleteArea(\"" + area.id + "\")'>删除</a></td></tr>";
+                        $("#areaTbody").append(areaTr);
+                    })
+                } else {
+                    var pAreaTt = "<tr><td>" + pArea.areaName + "（当前省份）</td>" +
+                            "<td><a href='javascript:void(0);' onclick='editArea(\"" + pArea.id + "\",this,\"" + pArea.areaName + "\")'>修改</a>" +
+                            "<a style='margin-left: 10px;' onclick='addArea(\"" + pArea.id + "\",this)'>添加区域</a>" +
+                            "<a style='margin-left:10px;' href='javascript:void(0);' onclick='deleteArea(\"" + pArea.id + "\"," + pArea.level + ")'>删除</a></td></tr>";
+                    $("#areaTbody").append(pAreaTt);
+                    $(areas).each(function (index, area) {
+                        var areaTr = "<tr><td><a href='javascript:void(0);' onclick='showChildArea(\"" + area.id + "\")'>" + area.areaName + "</a></td>" +
+                                "<td><a href='javascript:void(0);' onclick='editArea(\"" + area.id + "\",this,\"" + area.areaName + "\")'>修改</a>" +
+                                "<a style='margin-left:10px;' href='javascript:void(0);' onclick='deleteArea(\"" + area.id + "\")'>删除</a></td></tr>";
+                        $("#areaTbody").append(areaTr);
+                    })
+                }
+            },
+            error: function () {
+                layer.msg("未知错误！");
+            }
+        });
+    }
+    function editArea(areaId, area, areaName) {
+        if (!editFlag) {
+            editFlag = true;
+            var td = $(area).parent().prev();
+            var area_a = td.find("a");
+            if (area_a.length > 0) {
+                var areaInp = "<div isParent='false'><input type='text' areaId='" + areaId + "' value='" + areaName + "' areaName='" + areaName + "'>" +
+                        "<a href='javascript:void(0);' class='fa fa-check' onclick='edit(this)'>确定修改</a>" +
+                        "<a href='javascript:void(0);' class='fa fa-times' onclick='editCancel(this)'>取消</a></div>"
+                area_a.after(areaInp);
+                area_a.toggle();
+            } else {
+                var areaInp = "<div isParent='true'><input type='text' areaId='" + areaId + "' value='" + areaName + "' areaName='" + areaName + "'>" +
+                        "<a href='javascript:void(0);' class='fa fa-check' onclick='edit(this)'>确定修改</a>" +
+                        "<a href='javascript:void(0);' class='fa fa-times' onclick='editCancel(this)'>取消</a></div>"
+                td.html(areaInp);
+            }
+        }
+    }
+    function edit(item) {
+        var inp = $(item).siblings("input");
+        var areaId = inp.attr("areaId");
+        var areaName = inp.val();
+        if (areaName.length < 1) {
+            layer.msg("输入的区域不能为空！");
+            return;
+        }
+        $.ajax({
+            data: {id: areaId, areaName: areaName},
+            dataType: "json",
+            type: "post",
+            url: "${basePath}/sys/perm/area/doEdit",
+            success: function (data) {
+                if (data.success) {
+                    showChildArea(nowId);
+                    editFlag = false;
+                } else {
+                    layer.msg("异常错误！")
+                }
+            },
+            error: function () {
+                layer.msg("未知错误！")
+            }
+        });
+    }
+    function editCancel(item) {
+        var p = $(item).parent();
+        var areaName = p.find(":first").attr("areaName");
+        if (p.attr("isParent") == "true") {
+            var pTd = p.parent();
+            pTd.empty();
+            pTd.html(areaName + "(当前省份)")
+        } else {
+            var area_a = p.prev()
+            area_a.toggle();
+            p.remove();
+        }
+        editFlag = false;
+    }
+
+
+    function deleteArea(areaId,level) {
+        //询问框
+        layui.use('layer', function () {
+            console.log(level);
+            var layer = layui.layer;
+            layer.confirm('确定删除吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                $.ajax({
+                    type: "POST",
+                    url: "${basePath}/sys/perm/area/delete?areaId=" + areaId,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.success) {
+                            if(level == 1){
+                                window.location.reload();
+                            }
+                            //跳转到当前页面
+                            showChildArea(nowId);
+                            layer.closeAll();
+                        } else {
+                            layer.msg(data.message);
+                        }
+                    }
+                });
+            }, function () {
+                return;
+            });
+        })
+    }
+    function addProvince() {
+        $("#addProvince").find(":first").val("");
+        var vis = $("#addProvince").css("visibility");
+        if(vis == "hidden"){
+            $("#addProvince").css("visibility","visible");
+        }else{
+            $("#addProvince").css("visibility","hidden");
+        }
+    }
+    function doAddProvince() {
+        var areaName = $("#addProvince").find(":first").val();
+        $.ajax({
+            type: "POST",
+            url: "${basePath}/sys/perm/area/doEdit",
+            dataType: "json",
+            data:{areaName:areaName},
+            success:function (data) {
+                if(data.success){
+                    window.location.reload();
+                }
+            },
+            error:function () {
+                layer.msg("发生了未知错误！");
+            }
+        })
+    }
+    function cancelAddProvince() {
+        $("#addProvince").css("visibility","hidden");
+    }
+</script>
+</#macro>
+<@framework title="区域管理">
+<div class="row">
+    <div class="ibox-content  form-inline" style="background: #F3F3F4;">
+        <div class="input-group">
+            <form class="layui-form">
+                <select lay-filter="province">
+                    <#list areas as area>
+                        <option value="${(area.id?c)!}" areaName="${area.areaName!}">${area.areaName!}</option>
+                    </#list>
+                </select>
+            </form>
+        </div>
+        <button class="btn btn-primary" onclick="addProvince(this)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加省份
+        </button>
+        <div id="addProvince" style="display: inline;visibility: hidden">
+            <input type="text" style="height: 36px;margin-left: 10px;" placeholder="请输入添加的省份名称">
+            <button class="btn btn-primary" onclick="doAddProvince()" style="margin-left: 10px;"><i class="fa fa-check"></i>&nbsp;确定</button>
+            <button class="btn btn-danger" onclick="cancelAddProvince()" style="margin-left: 5px;"><i class="fa fa-times"></i>&nbsp;取消</button>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable" class="layui-table">
+            <thead>
+            <tr>
+                <th>地区名称</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="areaTbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</@framework>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <#include "/admin/common/header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 430px;">
+    <form id="myForm" class="form-horizontal" enctype="multipart/form-data" autocomplete="off" data-validator-option="{theme:'default'}">
+        <input type="hidden" name="id" value="${(type.id?c)!}"><#if (type)??>
+        <input type="hidden" name="_date" value="${(type.createDate?datetime)!}"></#if>
+        <div class="form-group"><label class="col-sm-2 control-label">活动名称</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" value="${(type.name)!}" name="name" id="name"
+                       data-rule="活动名称:required;loginName">
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="alert alert-danger alert-dismissable" hidden id="_error">
+            <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">
+                &times;
+            </button>
+        </div>
+
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary" type="button" id="_submit" >
+                    <#if type??>修改
+                        <#else>新增
+                    </#if>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+<script src="${basePath}/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN"></script>
+<script type="text/javascript">
+
+
+//提交表单
+$(function () {
+    var msg = "";
+    var name = $("#name").val();
+    $("#_submit").click(function () {
+        if($("#name").val().length < 1 && $("#sort").val().length < 1 ){
+            return;
+        }
+        var form = $("#myForm");
+        var formDate = form.serialize();
+        var option= {
+            url:"${basePath}/admin/productType/editProductType",
+            type:"POST",
+            date:form.serialize(),
+            //提交前执行的回调函数
+            beforeSubmit:function(){
+                //判断当前name是否改变
+                if(name.length >= 1 && name == $("#name").val()){
+                      return true;
+                }
+                //设置一个标志记录是否成功
+                var flag = false;
+                //判断是否存在相同名称
+                $.ajax({
+                    url: "${basePath}/admin/productType/judgement",
+                    data: form.serialize(),
+                    type: "POST",
+                    //需要同步
+                    async : false,
+                    success: function(data){
+                        var d = JSON.parse(data);
+                        if(d.success && d.data){
+                            //如果没有重复，则进入下一步
+                           flag = true;
+                        } else {
+                            //如果有重复，则给出提示，并终止当前提交
+                           flag = false;
+                           msg =="活动名称重复，请修改活动名称！";
+                        }
+                    },
+                    error: function () {
+                        flag = false;
+                        msg = "发生了未知错误，请稍后重试！";
+                    }
+                });
+                if(msg.length >= 1){
+                    //给出提示信息
+                    $("#_error").html(msg);
+                    $("#_error").removeAttr("hidden");
+                }
+                return flag;
+            },
+            //提交成功后执行的回调函数
+            success:function(data){
+                var d = JSON.parse(data);
+                if(d.success && d.data){
+                    window.parent.location.reload();
+                }else{
+                    //添加失败
+                    msg = "操作失败，请重试！";
+                    $("#_error").html(msg);
+                    $("#_error").removeAttr("hidden");
+                }
+            },
+            //提交失败执行的函数
+            error:function(){
+                //500错误
+                msg = "服务器错误，请稍后重试或联系管理员！";
+                $("#_error").html(msg);
+                $("#_error").removeAttr("hidden");
+            },
+//            clearForm:true,　　　　　　 //提交成功后是否清空表单中的字段值
+//            restForm:true,　　　　　　  //提交成功后是否重置表单中的字段值，即恢复到页面加载时的状态
+//            timeout:6000 　　　　　 　 //设置请求时间，超过该时间后，自动退出请求，单位(毫秒)。　　
+//            target:target,　　//服务器返回的响应数据显示的元素(Id)号
+//            beforeSerialize:function(){} //序列化提交数据之前的回调函数
+//            dataType:"JSON",　　　　　　　//服务器返回数据类型
+        }
+        form.ajaxSubmit(option);
+    })
+});
+
+
+</script>
+</body>
+</html>

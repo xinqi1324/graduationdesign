@@ -1,0 +1,83 @@
+<#include "/admin/common/framework.html" />
+<#macro css>
+    <link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+    <li><a>商品管理</a></li>
+    <li class="active"><strong>品牌管理</strong></li>
+</#macro>
+<#macro script>
+    <script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+    <script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+    <script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/js/base_list.js"></script>
+    <script src="${basePath}/static/js/common.js"></script>
+    <script>
+        var editUrl = "${basePath}/admin/product/brand/edit.html";
+        var delUrl = "${basePath}/admin/product/brand/delete.html";
+        var area = ['540px', '600px'];
+
+        var dataUrl = "${basePath}/admin/product/brand/list.html";
+        var dataColumns = [{
+            field: 'name',
+            title: '品牌名称'
+        }, {
+            field: 'url',
+            title: '品牌官网'
+        }, {
+            title: '品牌商标',
+            formatter: function (value, row, index) {
+                var logo = "${basePath}"+row.logo;
+                if (logo.length < 1) {
+                    return '<div style="height:100px;"></div>';
+                } else {
+                    return '<image src="' + logo + '" style="height:100px;">';
+                }
+
+            }
+        }, {
+            field: 'createDate',
+            title: '创建时间',
+            formatter: function (value, row, index) {
+                return formatDate(row.createDate);
+            }
+        }, {
+            field: 'modifyDate',
+            title: '最后更新时间',
+            formatter: function (value, row, index) {
+                return formatDate(row.modifyDate);
+            }
+        }, {
+            title: '操作',
+            formatter: function (value, row, index) {
+                var id = row.id;
+                return '<a class="btn btn-xs btn-warning" onclick="editEntity(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a> '
+                        + '<a class="btn btn-xs btn-danger" onclick="delEntity(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> '
+
+            }
+        }];
+    </script>
+
+</#macro>
+<@framework title="品牌管理">
+<div class="row">
+    <form id="searchForm" class="ibox-content text-right form-inline" onsubmit="javascript:return false;">
+        <div class="input-group">
+			<span class="input-group-addon">
+				名称
+			</span>
+            <input type="text" name="name" class="form-control">
+        </div>
+        <button class="btn btn-primary" onclick="_search()" type="button"><i class="fa fa-pencil"></i>&nbsp;搜索
+        </button>
+        <button class="btn btn-primary" onclick="editEntity(null)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加品牌
+        </button>
+    </form>
+    <div class="row">
+        <div class="col-sm-12">
+            <table id="dataTable"></table>
+        </div>
+    </div>
+</@framework>

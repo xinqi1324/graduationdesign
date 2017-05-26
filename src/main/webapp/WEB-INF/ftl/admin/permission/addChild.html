@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "../common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+   <form class="layui-form layui-form-pane">
+   	   <input type="hidden" name="pid" value="${(permission.id?c)!}">
+       <div class="layui-form-item">
+           <label class="layui-form-label">权限名称</label>
+           <div class="layui-input-block">
+                <input type="text" value="" name="title" id="title" data-rule="用户名:required;loginName">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">父节点</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" readonly value="${permission.title}" data-rule="用户名:required;loginName">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">权限类型</label>
+           <div class="col-sm-10">
+                <select name="type"  class="form-control m-b">
+                    <option value="0"selected >菜单</option>
+                    <option value="1">功能</option>
+                </select>
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">状态</label>
+           <div class="col-sm-10">
+               正常<input type="radio" name="state" checked value="0" class="radio-inline">
+               禁用<input type="radio" name="state" value="1" class="radio-inline">
+           </div>
+       </div>
+        <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">权限地址</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" value="" name="Url" data-rule="地址:required;">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">排序</label>
+           <div class="col-sm-10">.
+               <input type="text" class="form-control" value="" name="sort" data-rule="排序:required;">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">权限编码</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" value="" name="permCode" data-rule="权限编码:required;">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">图标</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" value="" name="icon">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+       <div class="form-group"><label class="col-sm-2 control-label">描述</label>
+           <div class="col-sm-10">
+               <input type="text" class="form-control" value="" name="description" data-rule="描述:required;">
+           </div>
+       </div>
+       <div class="hr-line-dashed"></div>
+        <div class="form-group">
+            <div class="text-center">
+                <!--<#if permission??> <button class="btn btn-primary" type="submit">修改</button>-->
+                    <!--<#else> <button class="btn btn-primary" type="submit" >新增</button></#if>-->
+                <button class="btn btn-primary" type="submit">新增</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+<script src="${basePath}/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN"></script>
+<script type="text/javascript">
+$("#myForm").validator({
+    valid: function(form){
+        //获取修改或新增
+        var url = "${basePath}/sys/perm/permission/editPerm";
+        var me = this;
+        // 提交表单之前，hold住表单，防止重复提交
+        me.holdSubmit();
+        console.log($(form).serialize());
+//        window.location.href=url;
+        $.ajax({
+        	url: url,
+            data: $(form).serialize(),
+            type: "POST",
+            success: function(data){
+            	var d = JSON.parse(data);
+                if(d.success && d.data){
+                	window.parent.location.reload();
+                	//当你在iframe页面关闭自身时
+                	//var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                	//parent.layer.close(index); //再执行关闭
+                } else {
+                	//失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                    me.holdSubmit(false);
+                }
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

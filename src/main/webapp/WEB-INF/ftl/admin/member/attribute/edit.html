@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "../../common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content" >
+    <form class="layui-form layui-form-pane">
+        <input type="hidden" name="id" value="${(memberAttribute.id?c)!}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">属性名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" placeholder="请输入属性名称" value="${(memberAttribute.name)!}" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否必填</label>
+            <div class="layui-input-block">
+                <#--当memberAttribute不存在（即添加的时候 设置选中 “必填” 选项，当编辑的时候根据值设置 -->
+                <input type="radio" name="isRequired" value="0" title="选填" <#if !memberAttribute?? || !memberAttribute.isRequired > checked </#if>>
+                <input type="radio" name="isRequired" value="1" title="必填" <#if memberAttribute?? && memberAttribute.isRequired > checked </#if>>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否可用</label>
+            <div class="layui-input-block">
+                <#--当memberAttribute不存在（即添加的时候 设置选中 “可用” 选项，当编辑的时候根据值设置 -->
+                <input type="radio" name="isEnabled" value="1" title="可用" <#if !memberAttribute?? || memberAttribute.isEnabled > checked </#if>>
+                <input type="radio" name="isEnabled" value="0" title="不可用" <#if memberAttribute?? && !memberAttribute.isEnabled > checked </#if>>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序</label>
+            <div class="layui-input-block">
+                <input type="text" name="sort" placeholder="请输入顺序" value="${(memberAttribute.sort)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">属性类型</label>
+            <div class="layui-input-inline">
+                <select id="attributeType" name="attributeType" lay-verify="required" lay-filter="attributeType">
+                    <#list formTypes as formType>
+                        <option value="${formType.getValue()}" data-has-option="${formType.hasOption()?c}"
+                                <#if memberAttribute?? && memberAttribute.attributeType == formType.getValue()>selected</#if> >${formType.getDescription()}</option>
+                    </#list>
+                </select>
+            </div>
+            <button class="layui-btn layui-btn-radius layui-hide" type="button" id="addOptionBtn" onclick="addOption()">
+                <i class="layui-icon">&#xe608;</i> 添加选项
+            </button>
+        </div>
+        <div id="optionDiv" class="layui-hide">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+                <legend>属性选项</legend>
+            </fieldset>
+            <#if (memberAttribute.attributeOptionStore)??>
+                <#list memberAttribute.attributeOptionStore?split(",") as option>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">选项</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="attributeOptionStore" lay-verify="required" placeholder="请输入选项"
+                                   value="${option}" autocomplete="off" class="layui-input">
+                        </div>
+                        <button onclick="delSelect(this)" class="layui-btn layui-btn-small" type="button" style="margin: 3px 0px">
+                            <i class="layui-icon">&#xe640;</i>
+                        </button>
+                    </div>
+                </#list>
+            </#if>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    var url = "${basePath}/admin/member/rank/editMemberRank";
+</script>
+<script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script type="text/javascript">
+
+    layui.use('form', function(){
+        var form = layui.form();
+
+        if($("#attributeType").find("option:checked").data("has-option")){
+            $("#addOptionBtn").removeClass("layui-hide")
+            $("#optionDiv").removeClass("layui-hide")
+            if( $("#optionDiv").children("div").length <= 0)
+                addOption();
+        }
+        form.on('select(attributeType)', function(data){
+            if($(data.elem).find("option:checked").data("has-option")){
+                $("#addOptionBtn").removeClass("layui-hide");
+                $("#optionDiv").removeClass("layui-hide");
+                if( $("#optionDiv").children("div").length <= 0)
+                    addOption();
+            }else{
+                $("#addOptionBtn").addClass("layui-hide");
+                $("#optionDiv").addClass("layui-hide");
+                $("#optionDiv").children("div").remove();
+            }
+        });
+
+        var lock = false;
+        form.on('submit(laySubmit)', function(formMsg){
+            if(!lock) {
+                lock = true;
+                $.ajax({
+                    url: "${basePath}/admin/member/attribute/editMemberAttribute.html",
+                    dataType: "json",
+                    data: $("form").serialize(), //formMsg.field
+                    type: "POST",
+                    success: function (data) {
+                        if (data.success) {
+                            window.parent.location.reload();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.close(index);
+                            });
+                            //失败，提交表单成功后，释放锁，如果不释放锁，就变成了只能提交一次的表单
+                            lock = false;
+                        }
+                    }
+                });
+            }
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+
+    //删除选项
+    function delSelect(option) {
+        //首先判断选项不能少于一个
+        if($("#optionDiv").children("div").length <=1){
+            layui.use('layer', function () {
+                var layer = layui.layer;
+                layer.msg("至少一个选项！")
+            })
+        }else{
+            $(option).parent().remove();
+        }
+
+    }
+    //添加选项
+    function addOption(){
+        var addDiv = '<div class="layui-form-item"><label class="layui-form-label">选项</label> ' +
+                '<div class="layui-input-inline" ><input type="text"name="attributeOptionStore" lay-verify="required" ' +
+                'placeholder="请输入选项" autocomplete="off" class="layui-input"  ></div>' +
+                '<button style="margin: 3px 0px" onclick="delSelect(this)" class="layui-btn layui-btn-small" ' +
+                'type="button"><i class="layui-icon">&#xe640;</i></button></div>';
+        $("#optionDiv").append(addDiv);
+    }
+</script>
+</body>
+</html>

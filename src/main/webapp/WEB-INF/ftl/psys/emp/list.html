@@ -1,0 +1,99 @@
+<#include "/admin/common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>员工管理</a></li><li class="active"><strong>员工信息管理</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script type="text/javascript">
+    var editUrl = "${basePath}/admin/emp/insert.html";
+    var area = ['700px', '600px'];
+
+    var dataUrl = "${basePath}/admin/emp/getEmpList.html";
+    var dataColumns = [{
+        field: 'name',
+        title: '姓名'
+    }, {
+        title: '入职时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.workStartTime);
+        }
+    },/* {
+        formatter: function(value, row, index){
+           return "晚点写";
+        },
+        title: '职称'
+    },*/ {
+		formatter: function(value, row, index){
+			var status = row.status;
+			if(status == 1){
+				return "冻结"
+			}
+			return "正常";
+		},
+        title: '状态'
+    }, {
+        title: '最后更新时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.lastDate);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var status = row.status;
+            var id = row.id;
+            if(status == 0){
+                return '<a class="btn btn-xs btn-danger" onclick="freeze(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>冻结</a>';
+            }else{
+                return '<a class="btn btn-xs btn-info" onclick="freeze(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>解除冻结</a>';
+            }
+        }
+    }];
+
+    function freeze(id) {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            $.ajax({
+                type: "POST",
+                url: "${basePath}/admin/emp/freezeEmp?id=" + id,
+                dataType: "json",
+                success: function (data) {
+                    if (data.success) {
+                        $('#dataTable').bootstrapTable('refresh', {url: dataUrl});
+                    } else {
+                        layer.alert(data.message, {icon: 2}, function (index) {
+                            layer.closeAll();
+                        });
+                    }
+                }
+            });
+        });
+    }
+</script>
+</#macro>
+<@framework title="用户管理">
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>
+		</div>
+		<button class="btn btn-primary" onclick="editEntity(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加员工</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+</@framework>

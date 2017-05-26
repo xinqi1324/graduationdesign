@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+    <script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+    <script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+    <script src="${basePath}/static/js/common.js"></script>
+    <link rel="stylesheet" href="${basePath}/static/plugins/jQuery-sorts/css/style.css"/>
+    <link rel="stylesheet" type="text/css"
+          href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css">
+    <link rel="stylesheet" href="${basePath}/static/plugins/layui/css/layui.css" media="all">
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+    <form id="myForm" class="layui-form layui-form-pane" action="">
+        <input type="hidden" id="productCategoryId" name="productCategoryId" value="${(product.productCategory.id?c)!}"
+               lay-verify="checkboxVerify">
+        <input type="hidden" id="brandId" name="brandId" value="${(product.brand.id?c)!}">
+        <input type="hidden" id="productId" name="id" value="${(product.id?c)!}">
+        <input type="hidden" name="originalProductCategory" value="${(product.productCategory.id?c)!}">
+        <input type="hidden" name="noSpec" id="noSpec" value="${noSpec}">
+
+        <div class="layui-tab" lay-filter="tab">
+            <ul class="layui-tab-title">
+                <li class="layui-this">商品信息</li>
+                <li>分类选择</li>
+                <li>商品参数</li>
+                <li>商品描述</li>
+                <li>图片选择</li>
+            </ul>
+            <div class="layui-tab-content">
+                <!-------------------------------------------->
+                <!--商品信息-->
+                <!-------------------------------------------->
+                <div class="layui-tab-item layui-show">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" id="name" autocomplete="off" placeholder="请输入商品名称"
+                                   value="${(product.name)!}" class="layui-input" lay-verify="text">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <button class="layui-btn" id="selectBrand" type="button">选择商品品牌</button>
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品品牌</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="brandName" class="layui-input" placeholder="请选择商品品牌"
+                                   value="${(product.brand.name)!}" readonly lay-verify="text">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" id="productPrice">
+                        <span style="position:relative;top:7px">元</span>
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品价格</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="price" autocomplete="off" placeholder="请输入默认商品价格"
+                                   value="${(product.price?c)!}" class="layui-input" lay-verify="price"
+                                   id="productPriceInp">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" id="productWeight">
+                        <span style="position:relative;top:7px">千克</span>
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品重量</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="weight" autocomplete="off" placeholder="请输入默认商品重量"
+                                   value="${(product.weight?c)!}" class="layui-input" lay-verify="price"
+                                   id="productWeightInp">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" id="productStock">
+                        <span style="position:relative;top:7px">件</span>
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品库存</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="stock" autocomplete="off" placeholder="请输入默认商品库存"
+                                   value="${(product.stock?c)!}" class="layui-input" lay-verify="number"
+                                   id="productStockInp">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品描述</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="metaDescription" id="metaDescription" autocomplete="off"
+                                   placeholder="请输入商品描述"
+                                   value="${(product.metaDescription)!}" class="layui-input" lay-verify="text">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>商品关键词</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="metaKeywords" id="metaKeywords" autocomplete="off"
+                                   placeholder="请输入商品关键词"
+                                   value="${(product.metaKeywords)!}" class="layui-input" lay-verify="text">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><p style="color: red;display: inline">*</p>赠送积分</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="point" id="point" autocomplete="off" placeholder="请输入赠送积分"
+                                   value="${(product.point?c)!}" class="layui-input" lay-verify="number">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-------------------------------------------->
+                <!--分类选择-->
+                <!-------------------------------------------->
+                <div class="layui-tab-item">
+                    <div class="contains">
+                        <!--商品分类-->
+                        <div class="wareSort clearfix">
+                            <ul id="sort1"></ul>
+                            <ul id="sort2" style="display: none;"></ul>
+                            <ul id="sort3" style="display: none;"></ul>
+                        </div>
+                        <div class="selectedSort"><b>您当前选择的商品类别是：</b>
+
+                            <span id="selectedSort">
+                            <#list productCategories as productCategory>
+                            ${productCategory.name}
+                               <#if productCategory_index != productCategories?size - 1>></#if>
+                            </#list></span>
+                        </div>
+                        <div class="wareSortBtn">
+                            <input id="releaseBtn" type="button" value="确定" disabled="disabled"/>
+                        </div>
+                    </div>
+                </div>
+                <!-------------------------------------------->
+                <!--商品参数-->
+                <!-------------------------------------------->
+                <div class="layui-tab-item" id="productParameter">
+                <#if product??>
+                <#--获取当前商品分类-->
+                        <div class="selectedSort">
+                        <b>您当前选择的商品类别是： </b>
+                            <#list productCategories as productCategory>
+                            ${productCategory.name}
+                                <#if productCategory_index != productCategories?size - 1>></#if>
+                            </#list>
+                        <i id="selectedSort"></i></div>
+                    <#list productCategoryParameter as productCategoryPara>
+                        <#if productCategoryPara.isRequired>
+                            <!--定义必选项-->
+                            <#assign required = "lay-verify='required'"/>
+                            <#assign redP = "<p style='color: red;display: inline'>*</p>">
+                        <#else>
+                            <#assign required = "">
+                            <#assign redP = "">
+                        </#if>
+                        <!--纯文本参数-->
+                        <#if productCategoryPara.type == 2>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">
+                                ${redP!}
+                                        ${productCategoryPara.name!}
+                                </label>
+                                <div class="layui-input-block">
+                                    <!--遍历参数数据-->
+                                    <#list product.parameters as parameter>
+                                        <#if parameter.mapkeyId == productCategoryPara.id>
+                                            <#assign parameterValue =  parameter.element>
+                                            <input name="${productCategoryPara.id?c!}" type="text" autocomplete="off"
+                                                   value="${parameterValue}" class="layui-input" ${required!}>
+                                        </#if>
+                                    </#list>
+
+                                </div>
+                            </div>
+                            <!--单项选择参数-->
+                        <#elseif  productCategoryPara.type == 0>
+                            <#assign required =""/>
+                            <#if productCategoryPara.isRequired><input hidden name="singleDiv">
+                                <#assign required = "lay-verify='radioVerify'"/>
+                            </#if>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">
+                                ${redP!}
+                                ${productCategoryPara.name!}
+                                </label>
+                                <div class="layui-input-block">
+                                <#--遍历选项-->
+                                    <#list productCategoryPara.attributeOptionStore?split(",") as radioValue>
+                                        <#list product.parameters as parameter>
+                                        <#--判断首选项-->
+                                            <#if parameter.mapkeyId == productCategoryPara.id>
+                                                <#assign radioCheck = "">
+                                                <#if parameter.element == radioValue>
+                                                    <#assign radioCheck = "checked">
+                                                </#if>
+                                            </#if>
+                                        </#list>
+                                        <input ${radioCheck} type="radio" name="${productCategoryPara.id?c!}"
+                                                             value="${radioValue!}" title="${radioValue!}" ${required}>
+                                    </#list>
+                                </div>
+                            </div>
+                            <!--多项选择参数-->
+                        <#elseif  productCategoryPara.type == 1>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">
+                                <#--加入红色星星-->
+                                ${redP!}
+                                ${productCategoryPara.name!}
+                                <#assign flag = false>
+                                </label>
+                            <#--遍历必选多选项-->
+                                <#if productCategoryPara.isRequired><input hidden name="findDiv"></#if>
+                                <div class="layui-input-block">
+                                <#--遍历所有参数选项-->
+                                    <#list productCategoryPara.attributeOptionStore?split(",") as checkboxValue>
+                                    <#--遍历商品已选选项-->
+                                        <#list product.parameters as parameter>
+                                        <#--判断首选项-->
+                                            <#if parameter.mapkeyId == productCategoryPara.id>
+                                            <#--遍历已选项-->
+                                                <#assign checked = "">
+                                                <#assign flag = true>
+                                                <#list parameter.element?split(",") as checkedValue>
+                                                    <#if checkedValue == checkboxValue>
+                                                        <#assign checked = "checked">
+                                                        <#break >
+                                                    </#if>
+                                                </#list>
+                                                <input ${checked} type="checkbox"
+                                                                  name="${productCategoryPara.id?c!}"
+                                                                  value="${checkboxValue!}" title="${checkboxValue!}">
+                                            </#if>
+                                        </#list>
+                                    <#--如果没有已选择的则遍历所有非选择项-->
+                                        <#if !flag>
+                                            <input type="checkbox" name="${productCategoryPara.id?c!}"
+                                                   value="${checkboxValue!}" title="${checkboxValue!}">
+                                        </#if>
+                                    </#list>
+                                </div>
+                            </div>
+                        </#if>
+                    </#list>
+                <#else>
+                    <p>请先选择商品分类</p>
+                    <input lay-verify="required" hidden>
+                </#if>
+                </div>
+                <!-------------------------------------------->
+                <!--商品描述-->
+                <!-------------------------------------------->
+                <div class="layui-tab-item">
+                    <div class="layui-form-item layui-form-text">
+                        <div style="margin: 10px 0px;width:600px;">
+                            <textarea class="layui-textarea" name="description"
+                                      id="description">${(product.description)!}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-------------------------------------------->
+                <!--图片选择-->
+                <!-------------------------------------------->
+                <div class="layui-tab-item">
+                    <fieldset class="layui-elem-field layui-field-title">
+                        <legend style="font-size: 13px">建议图片尺寸：700*700</legend>
+                    </fieldset>
+                    <table style="text-align: center;" border="1" class="layui-table">
+                    <#--设置默认图片-->
+                    <#assign defaultImg = "${basePath}/static/img/photo.jpg">
+                    <#if product??>
+                        <#list product.productImageListStore as img>
+                            <#if img_index==0 && img?length gt 1><#assign mainImg = img></#if>
+                            <#if img_index==1 && img?length gt 1><#assign firstImg = img></#if>
+                            <#if img_index==2 && img?length gt 1><#assign secondImg = img></#if>
+                            <#if img_index==3 && img?length gt 1><#assign thirdImg = img></#if>
+                            <#if img_index==4 && img?length gt 1><#assign fourthImg = img></#if>
+                        </#list>
+                    </#if>
+                        <tr>
+                            <td>
+                                <img id="mainImg" src="${mainImg!"${basePath}/static/img/main_select.jpg"}"
+                                     style="width: 130px;height: 130px;"
+                                     name="productImageListStore" onclick="selectImg(this)">
+                                <div class="site-demo-upbar">
+                                    <input type="file" name="file" id="mainFile">
+                                    <input type="hidden" id="main" name="productImageListStore"
+                                           value="${mainImg! }">
+                                </div>
+                            </td>
+                            <td>
+                                <img id="firstImg" src="${firstImg!defaultImg}" style="width: 130px;height: 130px;"
+                                     name="productImageListStore" onclick="selectImg(this)">
+                                <div class="site-demo-upbar">
+                                    <input type="file" name="file" id="firstFile">
+                                    <input type="hidden" id="first" name="productImageListStore"
+                                           value="${firstImg! }">
+                                </div>
+                            </td>
+                            <td>
+                                <img id="secondImg" src="${secondImg!defaultImg}" style="width: 130px;height: 130px;"
+                                     name="productImageListStore" onclick="selectImg(this)">
+                                <div class="site-demo-upbar">
+                                    <input type="file" name="file" id="secondFile">
+                                    <input type="hidden" id="second" name="productImageListStore"
+                                           value="${secondImg! }">
+                                </div>
+                            </td>
+                            <td>
+                                <img id="thirdImg" src="${thirdImg!defaultImg}" style="width: 130px;height: 130px;"
+                                     name="productImageListStore" onclick="selectImg(this)">
+                                <div class="site-demo-upbar">
+                                    <input type="file" name="file" id="thirdFile">
+                                    <input type="hidden" id="third" name="productImageListStore"
+                                           value="${thirdImg! }">
+                                </div>
+                            </td>
+                        <tr>
+                        </tr>
+                        <td>
+                            <img id="fourthImg" src="${fourthImg!defaultImg}" style="width: 130px;height: 130px;"
+                                 name="productImageListStore" onclick="selectImg(this)">
+                            <div class="site-demo-upbar">
+                                <input type="file" name="file" id="fourthFile">
+                                <input type="hidden" id="fourth" name="productImageListStore"
+                                       value="${fourthImg! }">
+                            </div>
+
+                        </td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+
+
+            <div>
+                <button class="layui-btn" lay-submit lay-filter="formSubmit">
+                <#if product??>立即修改
+                <#else>立即提交
+                </#if>
+                </button>
+            </div>
+
+    </form>
+</div>
+<div class="layui-form layui-form-pane">
+    <div id="divBrand" hidden>
+        <table data-toggle="table" data-search="true" data-search-on-enter-key="true" data-pagination="true"
+               style="text-align: center;">
+            <thead>
+            <tr>
+                <th data-sortable="true"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <#list brandList as brand>
+            <tr>
+                <td><input type="radio" name="brandName" value="${brand.id?c!}" title="${brand.name!}"
+                           lay-filter="selectBrand">
+                </td>
+            </tr>
+            </#list>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    var ajaxUrl = "${basePath}/admin/product/productCategoryTree.html";
+    var returnAjaxUrl = "${basePath}/admin/product/getParameter.html?productCategoryId=";
+</script>
+<script src="${basePath}/static/plugins/jQuery-sorts/js/jquery.sort.js"></script>
+<script>
+    //防止表单重复提交
+    var lock = false;
+    //初始化操作
+
+    init();
+    function init() {
+        var noSpec = $("#noSpec").val();
+        var weight = $("#productWeight");
+        var stock = $("#productStock");
+        var weightInp = $("#productWeightInp");
+        var stockInp = $("#productStockInp");
+        if (noSpec == "false") {
+            weightInp.removeAttr("lay-verify");
+            stockInp.removeAttr("lay-verify");
+            weight.attr("hidden", "true");
+            stock.attr("hidden", "true");
+        } else {
+            weightInp.attr("lay-verify", "price");
+            stockInp.attr("lay-verify", "number");
+            weight.removeAttr("hidden");
+            stock.removeAttr("hidden");
+        }
+    }
+
+    //选择图片
+    function selectImg(img) {
+        var div = $(img).next().find("input");
+        div[0].click();
+    }
+    //设置分类修改时的提示信息
+    var selected = false;
+    if ($("#productId").val().length >= 1) {
+        selected = true;
+    }
+    /*点击下一步*/
+    $("#releaseBtn").click(function () {
+        var releaseS = $(this).prop("disabled");
+        if (releaseS == false) {//未被禁用
+            //设置分类id
+            $("#productCategoryId").val(selectProductCategoryId);
+            if (selected) {
+                //判断是否已选择
+                layui.use('layer', function () {
+                    layer.confirm(
+                            '确定要修改分类么，确定将导致已填写和选择的参数丢失！',
+                            {icon: 3, title: '提示'},
+                            function (index) {
+                                //确定
+                                setParameter();
+                                layer.close(index);
+                            },
+                            function (index) {
+                                //取消
+                                layer.close(index);
+                                return;
+                            }
+                    )
+                })
+            } else {
+                setParameter();
+            }
+            //设置为已选择
+            selected = true;
+            //判断是否有规格
+            $.ajax({
+                url: "${basePath}/admin/product/getSpecNum?productCategoryId=" + selectProductCategoryId,
+                success: function (data) {
+                    $("#noSpec").val(data);
+                    init();
+                },
+                error: function () {
+                }
+            })
+        }
+    });
+    //设置参数
+    function setParameter() {
+        $.ajax({
+            url: returnAjaxUrl + selectProductCategoryId + "&productId=" + $("#productId").val(),
+            type: "post",
+            success: function (data) {
+                var allParameter = JSON.parse(data);
+                var item = '<div class="selectedSort"> <b>您当前选择的商品类别是： </b>' + expressD + ' <i id="selectedSort"></i></div>';
+                $(allParameter).each(function (listIndex, listData) {
+                    //参数数组
+                    var attributeOptionStore = listData.attributeOptionStore;
+                    //参数名称
+                    var listParameterName = '';
+                    var required = '';
+                    //分割参数数组
+                    var attrArr = attributeOptionStore.split(",");
+                    //每一个选项 checkbox、radio
+                    var single = "";
+                    //判断是否必须
+                    if (listData.isRequired) {
+                        listParameterName += '<p style="color: red;display: inline">*</p>';
+                        required += 'lay-verify="required"';
+                    }
+                    listParameterName += listData.name;
+                    //单选
+                    if (listData.type == 0) {
+                        single = "";
+                        for (var i = 0; i < attrArr.length; i++) {
+                            if (listData.isRequired) {
+                                if (i == 0) {
+                                    //设置一个默认选中项
+                                    single += '<input checked type="radio" name="' + listData.id + '" value="' + attrArr[i] + '" title="' + attrArr[i] + '" >';
+                                } else {
+                                    single += '<input type="radio" name="' + listData.id + '" value="' + attrArr[i] + '" title="' + attrArr[i] + '" >';
+                                }
+                            } else {
+                                single += '<input type="radio" name="' + listData.id + '" value="' + attrArr[i] + '" title="' + attrArr[i] + '" >';
+                            }
+
+                        }
+                        item += '<div class="layui-form-item"><label class="layui-form-label">' + listParameterName + '</label><div class="layui-input-block"> '
+                                + single + '</div> </div>';
+                    }
+                    //多选
+                    if (listData.type == 1) {
+                        single = "";
+                        if (listData.isRequired) {
+                            for (var i = 0; i < attrArr.length; i++) {
+                                single += ' <input value="' + attrArr[i] + '" type="checkbox" name="' + listData.id + '" title="' + attrArr[i] + '">';
+                            }
+                            item += '<div class="layui-form-item"><label class="layui-form-label">' + listParameterName + '</label><input hidden name="findDiv"><div class="layui-input-block"> '
+                                    + single + '</div> </div>';
+                        } else {
+                            for (var i = 0; i < attrArr.length; i++) {
+                                single += ' <input value="' + attrArr[i] + '" type="checkbox" name="' + listData.id + '" title="' + attrArr[i] + '">';
+                            }
+                            item += '<div class="layui-form-item"><label class="layui-form-label">' + listParameterName + '</label><div class="layui-input-block"> '
+                                    + single + '</div> </div>';
+                        }
+
+                    }
+                    //纯文本
+                    if (listData.type == 2) {
+                        item += '<div class="layui-form-item"><label class="layui-form-label">' + listParameterName + '</label>' +
+                                '<div class="layui-input-block"> <input name="' + listData.id + '"  ' + required + ' type="text" autocomplete="off"' +
+                                'value="" class="layui-input"> </div> </div>'
+                    }
+
+                })
+                $("#productParameter").html(item);
+                $("#releaseBtn").attr("disabled", true);
+            },
+            error: function () {
+
+            }
+        });
+    }
+    layui.use(['form', 'element', 'layer', 'layedit', 'upload'], function () {
+        var element = layui.element();
+        var layedit = layui.layedit
+                , $ = layui.jquery;
+        var form = layui.form();
+        var layer = layui.layer;
+
+        /**************************************************************/
+//图片上传
+        //主图上传
+        layui.upload({
+            url: '${basePath}/upload/file'//上传接口
+            , elem: '#mainFile'
+            , success: function (msg) {
+                //获取到图片url
+                var imgUrl = msg.url;
+                $("#main").val(imgUrl);
+                mainImg.src = msg.url;
+            }
+        });
+        layui.upload({
+            url: '${basePath}/upload/file'//上传接口
+            , elem: '#firstFile'
+            , success: function (msg) {
+                //获取到图片url
+                var imgUrl = msg.url;
+                $("#first").val(imgUrl);
+                firstImg.src = msg.url;
+            }
+        });
+        layui.upload({
+            url: '${basePath}/upload/file'//上传接口
+            , elem: '#secondFile'
+            , success: function (msg) {
+                //获取到图片url
+                var imgUrl = msg.url;
+                $("#second").val(imgUrl);
+                secondImg.src = msg.url;
+            }
+        });
+        layui.upload({
+            url: '${basePath}/upload/file'//上传接口
+            , elem: '#thirdFile'
+            , success: function (msg) {
+                //获取到图片url
+                var imgUrl = msg.url;
+                $("#third").val(imgUrl);
+                thirdImg.src = msg.url;
+            }
+        });
+        layui.upload({
+            url: '${basePath}/upload/file'//上传接口
+            , elem: '#fourthFile'
+            , success: function (msg) {
+                //获取到图片url
+                var imgUrl = msg.url;
+                $("#fourth").val(imgUrl);
+                fourthImg.src = msg.url;
+            }
+        });
+        /**************************************************************/
+        //富文本框
+        layedit.set({
+            uploadImage: {
+                url: '${basePath}/upload/layEdit' //接口url
+
+            }
+        })
+        var index = layedit.build('description', {
+            tool: [
+                'strong' //加粗
+                , 'italic' //斜体
+                , 'underline' //下划线
+                , 'del' //删除线
+                , '|' //分割线
+                , 'left' //左对齐
+                , 'center' //居中对齐
+                , 'right' //右对齐
+                , 'link' //超链接
+                , 'unlink' //清除链接
+                , 'face' //表情
+                , 'image' //插入图片
+            ]
+            , height: 200
+        })
+        //多选规则
+
+        form.verify({
+            text: function (value) {
+                if (value.length < 1) {
+                    return "必填项不能为空"
+                }
+                var flag = legalJudgement(value);
+                if (!flag) {
+                    return "包含非法字符！"
+                }
+            },
+            checkboxVerify: function (value) {
+                if (!checkboxVerify()) {
+                    return "多选项参数必须选择";
+                }
+            }
+            , price: function (value) {
+                var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                if (!reg.test(value)) {
+                    return "输入的数值有误！";
+                }
+                if ((value * 1) <= 0) {
+                    return "输入的数值不能小于0！";
+                }
+            }
+            , radioVerify: function (value) {
+                var findDiv = $("input[name='singleDiv']");
+                var divs = $(findDiv.next().children("div"));
+                var flag = false;
+                divs.each(function (index, data) {
+                    var inputs = $(data).children("input:checked");
+                    if (inputs.length < 1) {
+                        flag = true;
+                        return false;
+                    }
+                })
+                if (flag) {
+                    return "单选项参数必须选择";
+                }
+            }
+        });
+        //一些事件监听
+        element.on('tab(tab)', function (data) {
+            form.render("checkbox");
+            form.render("radio");
+        });
+
+        //监听提交
+        form.on('submit(formSubmit)', function (data) {
+            var weightInp = $("#productWeightInp");
+            var priceInp = $("#productPriceInp");
+            var stockInp = $("#productStockInp");
+            if (weightInp.val().length < 1) {
+                weightInp.val("0");
+            }
+            if (priceInp.val().length < 1) {
+                priceInp.val("0");
+            }
+            if (stockInp.val().length < 1) {
+                stockInp.val("0");
+            }
+            //获取所有参数信息
+            var parameter = new Array();
+            //参数信息存储方式： 参数id：参数值
+            $("#productParameter input").each(function (index, data) {
+                if ($(data).attr('type') == 'radio' && $(data).is(':checked')) {
+                    //获取到单选信息
+                    var para = {'id': $(data).attr('name'), 'value': [$(data).val()]};
+                    parameter.push(para);
+                } else if ($(data).attr('type') == 'text') {
+                    //获取到文本信息
+                    var para = {'id': $(data).attr('name'), 'value': [$(data).val()]};
+                    parameter.push(para);
+                }
+                else if ($(data).attr('type') == 'checkbox' && $(data).is(':checked')) {
+                    var flag = true;
+                    //获取到多选信息
+                    //先将第一个加入
+                    $(parameter).each(function (checkboxIndex, checkboxData) {
+                        //加入后续信息
+                        if (checkboxData.id == $(data).attr("name")) {
+                            checkboxData.value.push($(data).val());
+                            flag = false;
+                        }
+                    })
+                    //如果存在则不再添加
+                    if (flag) {
+                        var para = {'id': $(data).attr('name'), 'value': [$(data).val()]};
+                        parameter.push(para);
+                    }
+                }
+            })
+            var dataParameter = JSON.stringify(parameter);
+            var url = "${basePath}/admin/product/editProduct";
+            var msg = "";
+            //同步编辑器内容到textarea
+            layedit.sync(index);
+            if (!lock) {
+                lock = true;
+                $.ajax({
+                    url: url,
+                    data: $("#myForm").serialize() + "&parameter=" + dataParameter,
+                    type: "POST",
+                    dataType: "JSON",
+                    success: function (data) {
+                        if (data.success) {
+                            //成功添加
+                            window.parent.location.reload();
+                        } else {
+                            msg = data.message;
+                            lock = false;
+                            layer.msg(msg);
+                            //失败，提交表单成功后，释放hold，如果不释放hold，就变成了只能提交一次的表单
+                        }
+                    },
+                    error: function () {
+                        lock = false;
+                        msg = "异常错误！！！";
+                        layer.msg(msg);
+                    }
+                });
+            }
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+        //选择商品品牌
+        $("#selectBrand").click(
+                function () {
+                    form.render();
+                    layer.open({
+                        type: 1,
+                        title: "选择商品品牌",
+                        area: ['300px', '400px'],
+                        fix: false,
+                        shadeClose: true,
+                        maxmin: true,
+                        content: $("#divBrand"),
+                        success: function (layero, index) {
+                            //监听品牌选择
+                            form.on('radio(selectBrand)', function (data) {
+                                var brandId = $(data.elem).val();
+                                var brandName = data.elem.title;
+                                $("#brandId").val(brandId);
+                                $("#brandName").val(brandName);
+                                layer.close(index);
+                            });
+                        }
+                    });
+                }
+        )
+        $("#divBrand").click(function () {
+            form.render();
+        })
+    });
+
+</script>
+</form>
+</div>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<#include "../common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>会员管理</a></li><li class="active"><strong>会员管理</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script type="text/javascript">
+	var editUrl = "${basePath}/admin/member/edit.html";
+	var delUrl = "${basePath}/admin/member/delMemberRank.html";
+    var area = ['400px', '300px'];
+
+    var dataUrl = "${basePath}/admin/member/getMemberList.html";
+    var dataColumns = [{
+        field: 'username',
+        title: '用户名'
+    }, {
+        field: 'phone',
+        title: '手机号'
+    }, {
+        field: 'email',
+        title: '邮箱'
+    }, {
+        field: 'deposit',
+        title: '账户金额'
+    }, {
+		formatter: function(value, row, index){
+			var isDefault = row.isDefault;
+			if(isDefault == 1){
+				return "默认"
+			}
+			return "";
+		},
+        title: '是否默认'
+    }, {
+        field: 'createDate',
+        title: '创建时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.createDate);
+        }
+    }, {
+        field: 'modifyDate',
+        title: '最后更新时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.modifyDate);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="editEntity(' + "'" + id + "'"  +')"><i class="fa fa-pencil"></i>编辑</a> '
+                + '<a class="btn btn-xs btn-danger" onclick="delEntity(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> '
+                + '<a class="btn btn-xs btn-primary" onclick="editAttr(' + "'" + id + "'" + ')"><i class="fa fa-book"></i>设置属性</a>'
+
+        }
+    }
+    ];
+
+    function editAttr(id){
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                type: 2,
+                title: "设置会员属性",
+                shadeClose: false,
+                shade: 0.8,
+                area: ['500px','500px'],
+                fix: false,
+                maxmin: true,
+                content: "${basePath}/admin/member/editAttr.html?id=" + id
+            });
+        })
+    }
+</script>
+</#macro>
+<@framework title="会员管理">
+<div class="row">
+	<form id="searchForm" class="ibox-content text-right form-inline" onsubmit="javascript:return false;">
+		<div class="input-group">
+			<span class="input-group-addon">
+				名称
+			</span>
+			<input type="text" name="name" class="form-control">
+		</div>
+		<button class="btn btn-info" onclick="_search()" type="button">
+			<i class="fa fa-pencil"></i>&nbsp;搜索</button>
+		<button class="btn btn-primary" onclick="editEntity(null)" type="button">
+			<i class="fa fa-pencil"></i>&nbsp;添加会员</button>
+	</form>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+</@framework>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/layui/css/layui.css">
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/frontStatic/js/jsOperation.js"></script>
+    <script src="${basePath}/static/js/mustache.js"></script>
+    <script>
+        layui.use('layer', function () {
+        });
+        function showContent(content) {
+            layer.open({
+                type: 1,
+                title: '评论内容',
+                skin: 'layui-layer-demo', //样式类名
+                area: "300px",
+                closeBtn: 0, //不显示关闭按钮
+                anim: 2,
+                shadeClose: true, //开启遮罩关闭
+                content: '<p style="margin:10px;text-align:center">' + content + '</p>'
+            });
+
+        }
+        function deleteReply(replyId,item) {
+            layer.confirm('确定删除么？', {
+                btn: ['确定','取消'] //按钮
+            }, function(){
+                layer.closeAll();
+                $.ajax({
+                    data: {replyId: replyId},
+                    dataType: "json",
+                    url: "${basePath}/admin/product/comment/deleteReply.html",
+                    type: "post",
+                    success: function (data) {
+                        if(data.success){
+                            $(item).parents("tr").remove();
+                        }else{
+                            layer.msg("删除失败");
+                        }
+                    },
+                    error:function () {
+                        layer.msg("异常错误！");
+                    }
+                })
+            }, function(){
+                layer.close();
+            });
+        }
+        var heightProportion = 0.4;
+        var widthProportion = 0.3;
+        function showImage(image) {
+            var src = $(image).attr("src");
+            var img = new Image();
+            img.src = src;
+            var imgWidth = img.width;
+            var imgHeight = img.height;
+            var screeHeight = window.screen.height;
+            var screenWidth = window.screen.width;
+            var maxWidth = parseInt(mul(screenWidth, widthProportion));
+            var maxHeight = parseInt(mul(screeHeight, heightProportion));
+            if (imgWidth < maxWidth && imgHeight < maxHeight) {
+                layer.open({
+                    type: 1,
+                    title: false,
+                    area: [imgWidth + 'px', imgHeight + 'px'],
+                    resize: true,
+                    closeBtn: 0,
+                    skin: 'layui-layer-nobg', //没有背景色
+                    shadeClose: true,
+                    content: '<image src="' + src + '">'
+                });
+            } else {
+                //计算长宽比例，根据比例定死宽高
+                if (imgWidth > imgHeight) {
+                    var whProportion = div(imgWidth, imgHeight).toFixed(2);
+                    imgWidth = maxWidth;
+                    imgHeight = parseInt(div(imgWidth, whProportion));
+                } else {
+                    var whProportion = div(imgHeight, imgWidth).toFixed(2);
+                    imgHeight = maxHeight;
+                    imgWidth = parseInt(div(imgHeight, whProportion));
+                }
+                layer.open({
+                    type: 1,
+                    title: false,
+                    area: [imgWidth + 'px', imgHeight + 'px'],
+                    resize: true,
+                    closeBtn: 0,
+                    skin: 'layui-layer-nobg', //没有背景色
+                    shadeClose: true,
+                    content: '<image src="' + src + '" width="' + imgWidth + '" height="' + imgHeight + '">'
+                });
+            }
+        }
+
+    </script>
+</head>
+<body class="white-bg">
+<div id="comment">
+    <table class="layui-table">
+        <thead>
+        <th colspan="2">评论人信息：</th>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="width:100px;">评论人名称</td>
+            <td>${comment.memberName}</td>
+        </tr>
+
+        <tr>
+            <td>评论创建时间</td>
+            <td>${comment.createDate?datetime}</td>
+        </tr>
+        <tr>
+            <td>评分</td>
+            <td>${comment.score}</td>
+        </tr>
+        <tr>
+            <td>评论状态</td>
+            <td><#if comment.status == 0>未通过<#elseif comment.status==1>已通过</#if></td>
+        </tr>
+        <tr>
+            <td>商品名称</td>
+            <td title="${comment.productName}">${cutWords(comment.productName,15)}</td>
+        </tr>
+        <tr>
+            <td>sku名称</td>
+            <td title="${comment.skuName}">${cutWords(comment.skuName,15)}</td>
+        </tr>
+        <tr>
+            <td>评论内容</td>
+            <td>
+            ${cutWords(comment.content,15)}
+                <a href="javascript:void(0); onclick=showContent('${comment.content}')" style="text-decoration:underline ">查看全部</a>
+            </td>
+        </tr>
+        <tr>
+            <td>评论图片</td>
+            <td>
+            <#if comment.imageList?? && comment.imageList?length gt 1>
+                <#list comment.imageList?split(",") as img>
+                    <a href="javascript:void(0);" style="margin-left: 3px;">
+                        <image src="${img}" height="30" width="30" onclick="showImage(this)"></image>
+                    </a>
+                </#list>
+            <#else>
+                无
+            </#if>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<table class="layui-table">
+    <thead>
+    <tr><th colspan="5">回复信息：</th></tr>
+
+    </thead>
+    <tbody>
+    <tr>
+        <th>回复人名称</th>
+        <th>回复时间</th>
+        <th>被回复者名称</th>
+        <th>回复内容</th>
+        <th>操作</th>
+    </tr>
+    <#list replies as reply>
+    <tr>
+        <td title="${reply.memberName}">${cutWords(reply.memberName,5)}</td>
+        <td>${reply.createDate?datetime}</td>
+        <td>
+            <#if reply.replyName?? && reply.replyName?length gt 0>
+              ${reply.replyName}
+            </#if>
+        </td>
+        <td><a href="javascript:void(0);" onclick="showContent('${reply.content}')">查看</a></td>
+        <td><a href="javascript:void(0);" onclick="deleteReply('${reply.id?c}',this)">删除</a></td>
+    </tr>
+    </#list>
+
+
+    </tbody>
+</table>
+</body>
+</html>

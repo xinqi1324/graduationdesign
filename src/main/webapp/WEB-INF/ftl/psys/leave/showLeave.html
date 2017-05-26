@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+    <table class="layui-table">
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>申请人姓名</td>
+            <td>${leave.name}</td>
+        </tr>
+        <tr>
+            <td>申请时间</td>
+            <td>${(leave.createDate)?string("yyyy-MM-dd")} 至 ${(leave.endDate)?string("yyyy-MM-dd")}</td>
+        </tr>
+        <tr>
+            <td>申请总天数</td>
+            <td>${leave.dateCount}天</td>
+        </tr>
+        <tr>
+            <td>用户所属部门</td>
+            <td><#list depts as dept>
+                <#if dept.id == leave.deptId>
+            ${dept.deptName}
+            </#if>
+            </#list></td>
+        </tr>
+        <tr>
+            <td>用户职称</td>
+            <td><#list userTypes as userType>
+                <#if userType.key() == leave.type>
+            ${userType.desc()}
+            </#if>
+            </#list></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <#if leave.status == 0>
+                <button class="layui-btn" id="agree">同意</button>
+                <button class="layui-btn layui-btn-primary" id="disagree">拒绝</button>
+                <#elseif leave.status == 1>
+                    <button class="layui-btn layui-btn-primary">已同意</button>
+                <#elseif leave.status == 2>
+                    <button class="layui-btn layui-btn-primary">已拒绝</button>
+            </#if>
+        </div>
+    </div>
+</div>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script type="text/javascript">
+    var editUrl = "${basePath}/admin/leave/editLeaveStatus";
+    layui.use(['jquery', 'layer'], function () {
+        var $ = layui.jquery, layer = layui.layer;
+        $("#agree").click(function () {
+            layer.confirm('确定同意么？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                $.ajax({
+                    type: "POST",
+                    url: editUrl + "?id=${leave.id?c}&status=true" ,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.success) {
+                            window.parent.location.reload();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.close(index);
+                            });
+                        }
+                    }
+                });
+            }, function () {
+                return;
+            });
+        })
+    });
+
+</script>
+</body>
+</html>

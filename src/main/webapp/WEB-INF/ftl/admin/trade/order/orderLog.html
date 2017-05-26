@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/layui/css/layui.css">
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/frontStatic/js/jsOperation.js"></script>
+    <script src="${basePath}/static/js/mustache.js"></script>
+</head>
+<body class="white-bg">
+<div id="comment">
+<#list orderLogs as orderLog>
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td>操作者名称</td>
+            <td>${orderLog.operator}</td>
+        </tr>
+        <tr>
+            <td>操作者id</td>
+            <td>${orderLog.operatorId?c}</td>
+        </tr>
+        <tr>
+            <td>创建日期</td>
+            <td>${orderLog.createDate?datetime}</td>
+        </tr>
+        <tr>
+            <td>日志信息</td>
+            <td>${orderLog.info}</td>
+        </tr>
+        <tr>
+            <td>订单编号</td>
+            <td>${orderLog.orderSn}</td>
+        </tr>
+        </tbody>
+    </table>
+</#list>
+</div>
+</body>
+</html>

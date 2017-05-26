@@ -1,0 +1,91 @@
+<#include "/admin/common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>请假管理</a></li><li class="active"><strong>员工请假信息</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script type="text/javascript">
+    var editUrl = "${basePath}/admin/leave/showLeave.html";
+    var area = ['500px', '350px'];
+
+    var dataUrl = "${basePath}/admin/leave/getLeaveList.html";
+    var dataColumns = [{
+        field: 'name',
+        title: '姓名'
+    }, {
+        title: '申请时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.createDate);
+        }
+    },/* {
+        formatter: function(value, row, index){
+           return "晚点写";
+        },
+        title: '职称'
+    },*/ {
+		formatter: function(value, row, index){
+            <#list leaveStatusTypes as statusType>
+                if(row.status == ${(statusType.key())?c}){
+                    return "${statusType.desc()}";
+                }
+            </#list>
+		},
+        title: '状态'
+    },{
+		formatter: function(value, row, index){
+            <#list userTypes as userType>
+                if(row.type == ${(userType.key())?c}){
+                    return "${userType.desc()}";
+                }
+            </#list>
+		},
+        title: '职称'
+    },{
+		formatter: function(value, row, index){
+            <#list depts as dept>
+                if(row.deptId == ${(dept.id)?c}){
+                    return "${dept.deptName}";
+                }
+            </#list>
+		},
+        title: '部门'
+    }, {
+        title: '审批时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.operatorDate);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-primary" onclick="editEntity(' + "'" + id + "'" + ')"><i class="fa fa-search-plus"></i>查看详情</a>';
+        }
+    }];
+
+</script>
+</#macro>
+<@framework title="请假管理">
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>
+		</div>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+</@framework>

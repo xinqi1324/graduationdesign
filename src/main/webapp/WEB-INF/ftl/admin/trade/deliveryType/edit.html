@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "../../common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content" >
+    <form class="layui-form layui-form-pane">
+        <input type="hidden" name="id" value="${(deliveryType.id?c)!}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">配送类型名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" placeholder="请输入配送类型名称" value="${(deliveryType.name)!}" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">配送方式</label>
+            <div class="layui-input-block">
+                <input type="text" name="deliveryMethod" placeholder="请输入配送方式" value="${(deliveryType.name)!}" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">初始重量</label>
+            <div class="layui-input-block">
+                <input type="text" name="firstWeight" placeholder="请输入初始重量" value="${(deliveryType.firstWeight)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">初始价格</label>
+            <div class="layui-input-block">
+                <input type="text" name="firstWeightPrice" placeholder="请输入初始价格" value="${(deliveryType.firstWeightPrice)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">初始重量单位</label>
+            <div class="layui-input-block">
+                <input type="text" name="firstWeightUnit" placeholder="请输入初始重量单位" value="${(deliveryType.firstWeightUnit)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">续重量</label>
+            <div class="layui-input-block">
+                <input type="text" name="continueWeight" placeholder="请输入续重量" value="${(deliveryType.continueWeight)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">续重价格</label>
+            <div class="layui-input-block">
+                <input type="text" name="continueWeightPrice" placeholder="请输入续重价格" value="${(deliveryType.continueWeightPrice)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">续重单位</label>
+            <div class="layui-input-block">
+                <input type="text" name="continueWeightUnit" placeholder="请输入续重单位" value="${(deliveryType.continueWeightUnit)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序</label>
+            <div class="layui-input-block">
+                <input type="text" name="sort" placeholder="请输入排序" value="${(deliveryType.sort)!}" lay-verify="number" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">说明</label>
+            <div class="layui-input-block">
+                <textarea name="description" class="layui-textarea">${(deliveryType.description)!}</textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    var url = "${basePath}/admin/member/rank/editMemberRank";
+</script>
+<#include "../../common/form_js.html" />
+</body>
+</html>

@@ -1,0 +1,47 @@
+<#macro currentClass url="" class="">
+    <#if url!="" && request.getRequestUri()?contains(url)>
+        ${class}
+    </#if>
+</#macro>
+
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul class="nav metismenu" id="side-menu">
+            <li class="nav-header">
+                <div class="dropdown profile-element">
+                    <span class="avatar-container">
+                    <img alt="image" class="img-circle" src="${basePath}/static/img/profile_avatar.jpg" />
+                     </span>
+                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                    <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">${currentUser.nickName}</strong>
+                     </span> <span class="text-muted text-xs block">设置<b class="caret"></b></span> </span> </a>
+                    <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                        <li><a href="${basePath}/sys/perm/user/setAvatar.html">修改头像</a></li>
+                        <li><a href="profile.html">个人资料</a></li>
+                        <li><a href="contacts.html">联系我们</a></li>
+                        <li><a href="mailbox.html">信箱</a></li>
+                        <li class="divider"></li>
+                        <li><a href="${basePath}/admin/logout.html">安全退出</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="logo-element">SW</div>
+            </li>
+            <#list menuList as menu>
+                <li <@currentClass url="${menu.url}" class="class='active'"></@currentClass>>
+                <a href="#">
+                    <i class="${menu.icon}"></i>
+                    <span class="nav-label">${menu.title}</span>
+                    <span class="fa arrow"></span>
+                </a>
+                <ul class="nav nav-second-level">
+                    <#list menu.mvList as m>
+                    <li <@currentClass url="${m.url}" class="class='active'"></@currentClass>><a href="${m.url}">${m.title}</a></li>
+                    </#list>
+                </ul>
+                </li>
+            </#list>
+
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,204 @@
+<#include "/admin/common/framework.html" />
+<#macro css>
+<link rel="stylesheet" type="text/css"
+      href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css">
+<link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/treegrid/css/jquery.treegrid.css">
+</#macro>
+<#macro breadcrumb>
+<li><a>商品管理</a></li>
+<li class="active"><strong>商品分类管理</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/treegrid/js/jquery.treegrid.js"></script>
+<script src="${basePath}/static/plugins/treegrid/js/jquery.treegrid.bootstrap3.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script>
+    var editUrl = "${basePath}/admin/product/productCategory/edit.html";
+    var area = ['540px', '500px'];
+    var dataUrl = "${basePath}/admin/product/productCategory/getProductCategoryList.html";
+    var dataColumns = [{
+        field: 'id',
+        title: 'id',
+        visible: false
+    }, {
+        field: 'parentId',
+        title: 'parentId',
+        visible: false
+    }, {
+        field: 'name',
+        title: '商品分类名称'
+    }, {
+        field: 'createDate',
+        title: '创建时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.createDate);
+        }
+    }, {
+        field: 'modifyDate',
+        title: '最后更新时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.modifyDate);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            var pathArr = row.path.split(",");
+            if(pathArr.length == 3){
+                return '<a class="btn btn-xs btn-primary" onclick="addChildProductCategory(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>添加子分类</a> '
+                        + '<a class="btn btn-xs btn-warning" onclick="editEntity(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a> '
+                        + '<a class="btn btn-xs btn-info" onclick="editAttribute(' + "'" + id + "'" + ', 1 )"><i class="fa fa-map-marker"></i>参数管理</a> '
+                        + '<a class="btn btn-xs btn-info" onclick="editAttribute(' + "'" + id + "'" + ', 0 )"><i class="fa fa-map-marker"></i>规格管理</a> '
+                        + '<a class="btn btn-xs btn-danger" onclick="delProductCategory(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> '
+            }else{
+                return '<a class="btn btn-xs btn-primary" onclick="addChildProductCategory(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>添加子分类</a> '
+                        + '<a class="btn btn-xs btn-warning" onclick="editEntity(' + "'" + id + "'" + ')"><i class="fa fa-pencil"></i>编辑</a> '
+                        + '<a class="btn btn-xs btn-info" onclick="editAttribute(' + "'" + id + "'" + ', 1 )"><i class="fa fa-map-marker"></i>参数管理</a> '
+                        + '<a class="btn btn-xs btn-danger" onclick="delProductCategory(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> '
+            }
+
+        }
+    }];
+
+    tableOption.pagination = false;
+    tableOption.classes = 'table table-hover tree';
+    tableOption.rowStyle = function (row, index) {
+        var class1 = 'treegrid-' + row.id;
+        var class2 = ""
+        if (row.parentId != 0)
+            class2 = ' treegrid-parent-' + row.parentId;
+        return {
+            classes: class1 + class2
+        };
+    };
+    tableOption.onLoadSuccess = function () {
+        $('.tree').treegrid({initialState: 'collapsed'});
+    }
+    function delProductCategory(id) {
+        var msg = "";
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            //删除前判断
+            $.ajax({
+                type: "POST",
+                url: "${basePath}/admin/product/productCategory/deleteJudgement?productCategoryId=" + id,
+                dataType: "json",
+                success: function (data) {
+                    //如果有子分类则多进行一层判断
+                    if (data.success) {
+                        layer.confirm('确认删除该分类及其子分类么？', {
+                            btn: ['确定', '取消'] //按钮
+                        }, function () {
+                            layer.confirm('确定删除吗？', {
+                                btn: ['确定', '取消'] //按钮
+                            }, function () {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "${basePath}/admin/product/productCategory/delete?productCategoryId=" + id,
+                                    dataType: "json",
+                                    success: function (data) {
+                                        if (data.success) {
+                                            $('#dataTable').bootstrapTable('refresh', {url: dataUrl});
+                                            layer.closeAll();
+                                        } else {
+                                            layer.alert(data.message, {icon: 2}, function (index) {
+                                                layer.closeAll();
+                                            });
+                                        }
+                                    }
+                                });
+                            }, function () {
+                                return;
+                            });
+                        }, function () {
+                            return;
+                        });
+                    }
+                    //如果没有子分类
+                    else {
+                        //确定删除判断
+                        layer.confirm('确定删除吗？', {
+                            btn: ['确定', '取消'] //按钮
+                        }, function () {
+                            $.ajax({
+                                type: "POST",
+                                url: "${basePath}/admin/product/productCategory/delete?productCategoryId=" + id,
+                                dataType: "json",
+                                success: function (data) {
+                                    if (data.success)  {
+                                        $('#dataTable').bootstrapTable('refresh', {url: dataUrl});
+                                        layer.closeAll();
+                                    }else{
+                                        layer.alert(data.message, {icon: 2}, function (index) {
+                                            layer.closeAll();
+                                        });
+                                    }
+                                }
+                            });
+                        }, function () {
+                            return;
+                        });
+                    }
+                },
+                error: function () {
+                    layer.msg("异常错误！！")
+                }
+            });
+        })
+    }
+    function addChildProductCategory(id) {
+        var title = "添加子类商品";
+        var url = "${basePath}/admin/product/productCategory/addChild?productCategoryId=" + id;
+        //iframe层
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.open({
+                type: 2,
+                title: title,
+                shadeClose: true,
+                shade: 0.8,
+                area: ['540px', '500px'],
+                fix: false, //不固定
+                maxmin: true,
+                content: url//iframe的url
+            });
+        })
+    }
+    //参数管理
+    function editAttribute(id, type) {
+        window.location.href = "${basePath}/admin/product/productCategory/attribute?productCategoryId=" + id + "&type=" + type;
+    }
+    //检索
+</script>
+
+</#macro>
+<@framework title="商品分类管理">
+<div class="row">
+    <form id="searchForm" class="ibox-content text-right form-inline" onsubmit="javascript:return false;">
+        <div class="input-group">
+			<span class="input-group-addon">
+				名称
+			</span>
+            <input type="text" name="name" class="form-control">
+        </div>
+        <button class="btn btn-primary" onclick="_search()" type="button"><i class="fa fa-pencil"></i>&nbsp;搜索
+        </button>
+        <button class="btn btn-primary" onclick="editEntity(null)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加商品分类
+        </button>
+    </form>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+
+
+</@framework>

@@ -1,0 +1,47 @@
+<#include "common/base.html"/>
+<#macro script>
+    <script src="${basePath}/static/plugins/iCheck/js/icheck.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green',
+            });
+        });
+    </script>
+</#macro>
+<#macro css>
+<link href="${basePath}/static/plugins/iCheck/css/custom.css" rel="stylesheet">
+</#macro>
+<@base title="注册">
+<body class="gray-bg">
+    <div class="middle-box text-center loginscreen   animated fadeInDown">
+        <div>
+            <div>
+                <h1 class="logo-name">MIS</h1>
+            </div>
+            <h3>欢迎注册江山管理后台</h3>
+            <p>创建一个MIS新账户</p>
+            <form class="m-t" role="form" method="post" action="${basePath}/admin/register.html">
+                <div class="form-group">
+                    <input type="text" name="loginName" class="form-control" placeholder="请输入用户名" required="">
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" class="form-control" placeholder="请输入密码" required="">
+                </div>
+                <div class="form-group">
+                    <input type="password" name="repassword" class="form-control" placeholder="请再次输入密码" required="">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox i-checks"><label>
+                    <input type="checkbox" required=""><i></i>我同意注册协议</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary block full-width m-b">注 册</button>
+                <a class="btn btn-sm btn-white btn-block" href="${basePath}/admin/login.html">点此登录</a>
+            </form>
+            <p class="m-t text-center"><small><a target="_blank" href="http://www.jiangshaninfo.com/">&copy;jsinfo</a></small> </p>
+        </div>
+    </div>
+</body>
+</@base>

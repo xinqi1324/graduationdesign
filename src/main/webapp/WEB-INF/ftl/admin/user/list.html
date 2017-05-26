@@ -1,0 +1,82 @@
+<#include "../common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>权限管理</a></li><li class="active"><strong>用户管理</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script type="text/javascript">
+    var editUrl = "${basePath}/sys/perm/user/edit.html";
+    var delUrl = "${basePath}/sys/perm/user/delUser.html";
+    var area = ['500px', '400px'];
+
+    var dataUrl = "${basePath}/sys/perm/user/getUserList.html";
+    var dataColumns = [{
+        field: 'id',
+        title: '序号',
+        visible : false
+    }, {
+        field: 'loginName',
+        title: '登录名'
+    },  {
+		formatter: function(value, row, index){
+			return "${sysRole.name}";
+		},
+        title: '用户类型'
+    }, {
+		formatter: function(value, row, index){
+			var status = row.status;
+			if(status == 0){
+				return "正常"
+			}else if (status == 1){
+                return "冻结";
+            }
+		},
+        title: '状态'
+    }, {
+        field: 'crTime',
+        title: '创建时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.crTime);
+        }
+    }, {
+        field: 'lastTime',
+        title: '最后更新时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.lastTime);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-danger" onclick="delEntity(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a>';
+        }
+    }];
+</script>
+</#macro>
+<@framework title="用户管理">
+<div class="row">
+	<div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+		<div class="input-group">
+			<input type="text" class="form-control">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>
+		</div>
+		<button class="btn btn-primary" onclick="editEntity(null)" type="button">
+		<i class="fa fa-pencil"></i>&nbsp;添加用户</button>
+	</div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+</@framework>

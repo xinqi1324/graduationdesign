@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/select2/select2.min.css">
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/js/jquery.form.js"></script>
+    <script src="${basePath}/static/js/common.js"></script>
+    <script src="${basePath}/static/plugins/select2/select2.full.js"></script>
+    <script src="${basePath}/static/plugins/select2/zh-CN.js"></script>
+    <style>
+        .layui-form-label {
+            width: auto;
+        }
+
+        .layui-form {
+            margin: 10px 30px 0 10px;
+        }
+
+        .gift > .layui-unselect {
+            display: none;
+        }
+
+        .gift > .select2 {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body class="white-bg">
+<form class="layui-form" id="activity_form">
+    <input type="hidden" name="id" value="${(activity.id?c)!}">
+    <input type="hidden" name="status" value="${(activity.status)!}">
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品活动名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" autocomplete="off" placeholder="请输入商品活动名称"
+                   value="${(activity.name)!}" class="layui-input" lay-verify="required">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">活动起始日期</label>
+        <div class="layui-input-block">
+            <input class="layui-input" value="${(activity.beginDate?datetime)!}" placeholder="请选择活动起始日期"
+                   lay-verify="required" readonly name="beginDate"
+                   onclick="layui.laydate({elem: this ,istime: true , format: 'YYYY-MM-DD hh:mm:ss'})">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">活动结束日期</label>
+        <div class="layui-input-block">
+            <input class="layui-input" value="${(activity.endDate?datetime)!}" placeholder="请选择活动结束日期"
+                   lay-verify="required" readonly name="endDate"
+                   onclick="layui.laydate({elem: this ,istime: true , format: 'YYYY-MM-DD hh:mm:ss'})">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">描述</label>
+        <div class="layui-input-block">
+            <textarea name="description" placeholder="请输入活动描述" class="layui-textarea" lay-verify="required"
+            >${(activity.description)!}</textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">优先级</label>
+        <div class="layui-input-block">
+            <input type="text" value="${(activity.priority?c)!}" name="priority" autocomplete="off"
+                   placeholder="请输入优先级" class="layui-input" lay-verify="number">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">在同一订单是否允许多次</label>
+        <div class="layui-input-block">
+            <input type="radio" name="repeated" value="true" title="允许"
+            <#if activity??>
+                   <#if activity.repeated>checked</#if>
+               <#else>checked
+            </#if>>
+            <input type="radio" name="repeated" value="false" title="不允许"
+            <#if activity??>
+                   <#if !activity.repeated>checked</#if>
+            </#if>>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">活动类型</label>
+        <div class="layui-input-block">
+            <select lay-verify="required" lay-filter="tactic" name="tacticKey">
+                <option value="">请选择活动类型</option>
+            <#list tactics as tactic>
+                <option value="${tactic.getKey()}"
+                        <#if activity?? && activity.tacticKey == tactic.getKey()>selected</#if>
+                >${tactic.getDesc()}</option>
+            </#list>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item" id="show_info">
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" type="button" lay-filter="submit_form" lay-submit>立即提交</button>
+        </div>
+    </div>
+</form>
+<#if activity??>
+    <#assign tactic = activity.tacticObject?eval>
+    <#if tactic.giftId??>
+        <#assign giftId = tactic.giftId>
+    </#if>
+    <#if tactic.giftSatisfyCount??>
+        <#assign giftSatisfyCount = tactic.giftSatisfyCount>
+    </#if>
+    <#if tactic.giftSatisfyPrice??>
+        <#assign giftSatisfyPrice = tactic.giftSatisfyPrice>
+    </#if>
+    <#if tactic.satisfyPrice??>
+        <#assign satisfyPrice = tactic.satisfyPrice>
+    </#if>
+    <#if tactic.cutPrice??>
+        <#assign cutPrice = tactic.cutPrice>
+    </#if>
+    <#if tactic.giftCount??>
+        <#assign giftCount = tactic.giftCount>
+    </#if>
+</#if>
+<script type="text/template" id="satisfy_price">
+    //<!--
+        <div class="layui-inline">
+            <label class="layui-form-label">购满</label>
+            <div class="layui-input-block">
+                <input type="text" id="satisfyPrice" lay-verify="price" autocomplete="off"
+                 <#if activity?? && activity.tacticKey == 1>
+                   value="${satisfyPrice}"
+                </#if>
+                class="layui-input" placeholder="请输入需满足的金额">
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">减免</label>
+            <div class="layui-input-inline">
+                <input type="text" id="cutPrice" lay-verify="price" autocomplete="off"
+                <#if activity?? && activity.tacticKey == 1>
+                   value="${cutPrice}"
+                </#if>
+                class="layui-input" placeholder="请输入减免的金额">
+            </div>
+        </div>
+     //-->
+</script>
+<script type="text/template" id="gift_select">
+    //<!--
+    <div class="layui-form-item">
+        <label class="layui-form-label">请选择赠品</label>
+        <div class="layui-input-block gift">
+            <select class="select_gift" lay-verify="required" id="giftId">
+                <option value=""></option>
+            <#list giftVOs as gift>
+                <option value="${gift.id?c}"<#if giftId?? && giftId == gift.id?c>selected</#if>>${gift.name}</option>
+            </#list>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-block">
+            <label class="layui-form-label">请选择条件</label>
+            <div class="layui-input-block gift">
+                <select lay-verify="required" class="select_satisfy" onchange="selectSatisfy(this)">
+                    <option value=""></option>
+                    <option value="0"
+                    <#if giftSatisfyPrice??>
+                        selected
+                    </#if>
+                    >购满价格</option>
+                    <option value="1"
+                    <#if giftSatisfyCount??>
+                        selected
+                    </#if>
+                    >购满数量</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item" id="gift_satisfy_select">
+    </div>
+//-->
+</script>
+<script type="text/template" id="gift_satisfy_price">
+    //<!--
+    <div class="layui-inline">
+        <label class="layui-form-label">请输入金额</label>
+        <div class="layui-input-block">
+            <input type="text" id="giftSatisfyPrice" lay-verify="price"
+                <#if giftSatisfyPrice??>
+                  value="${giftSatisfyPrice}"
+                </#if>
+             autocomplete="off" class="layui-input" placeholder="请输入满赠的金额">
+        </div>
+    </div>
+    <div class="layui-inline">
+        <label class="layui-form-label">赠送的数量</label>
+        <div class="layui-input-inline">
+            <input type="text" id="giftCount" lay-verify="price" autocomplete="off"
+            <#if giftSatisfyPrice??>
+                <#if giftCount??>value="${giftCount}"</#if>
+            </#if>
+            class="layui-input" placeholder="请输入赠送的数量">
+        </div>
+    </div>
+    //-->
+</script>
+<script type="text/template" id="gift_satisfy_count">
+    //<!--
+    <div class="layui-inline">
+        <label class="layui-form-label">请输入购满量</label>
+        <div class="layui-input-block">
+            <input type="text" id="giftSatisfyCount" lay-verify="number" autocomplete="off"
+             <#if giftSatisfyCount??>
+                 value="${giftSatisfyCount}"
+             </#if>
+             class="layui-input" placeholder="请输入购满的数量">
+        </div>
+    </div>
+      <div class="layui-inline">
+        <label class="layui-form-label">赠送的数量</label>
+        <div class="layui-input-inline">
+            <input type="text" id="giftCount" lay-verify="price" autocomplete="off"
+             <#if giftSatisfyCount??>
+                <#if giftCount??>value="${giftCount}"</#if>
+             </#if>
+            class="layui-input" placeholder="请输入赠送的数量">
+        </div>
+    </div>
+    //-->
+</script>
+
+<script type="text/javascript">
+    var form;
+    var laydate;
+    var layer;
+    layui.use('laydate', function () {
+        laydate = layui.laydate;
+        var start = {
+            min: laydate.now()
+            , max: '2099-06-16 23:59:59'
+            , istoday: true
+            , isclear: true
+            , choose: function (datas) {
+                end.min = datas; //开始日选好后，重置结束日的最小日期
+                end.start = datas //将结束日的初始值设定为开始日
+            }
+        };
+    });
+    layui.use(['form', 'layer'], function () {
+        form = layui.form();
+        layer = layui.layer;
+        //初始化判断
+    <#if activity??>
+        init();
+    </#if>
+        form.verify({
+            price: function (value) {
+                var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                if (!reg.test(value)) {
+                    return "输入的数值有误！";
+                }
+            }
+        })
+        //提交表单
+        form.on('submit(submit_form)', function (data) {
+            //首先判断时间
+            var beginDate = $("input[name='beginDate']").val();
+            var endDate = $("input[name='endDate']").val();
+            var bDate = new Date(beginDate);
+            var eDate = new Date(endDate);
+            if(bDate >= eDate){
+                layer.alert("起始时间必须在结束时间前！！",{icon: 5});
+                return;
+            }
+            var form = $("#activity_form");
+            var activity = form.serializeJSON();
+            //满足的价格
+            var satisfyPrice = $("#satisfyPrice").val();
+            //满足的数量
+            var satisfyCount = $("#satisfyCount").val();
+            //减免的价格 （包括满减和降价）
+            var cutPrice = $("#cutPrice").val();
+            //赠品的Id
+            var giftId = $("#giftId").val();
+            //请输入赠品的数量
+            var giftCount = $("#giftCount").val();
+            //赠品所需满足的价格
+            var giftSatisfyPrice = $("#giftSatisfyPrice").val();
+            //赠品所需满足的数量
+            var giftSatisfyCount = $("#giftSatisfyCount").val();
+            //封装策略object
+            var tacticKey = form.find("select[name='tacticKey']").val();
+            var tacticObject = {};
+            if (tacticKey == 1) {
+                tacticObject.cutPrice = cutPrice;
+                tacticObject.satisfyPrice = satisfyPrice;
+            } else if (tacticKey == 2) {
+                tacticObject.giftId = giftId;
+                tacticObject.giftSatisfyPrice = giftSatisfyPrice;
+                tacticObject.giftSatisfyCount = giftSatisfyCount;
+                tacticObject.giftCount = giftCount;
+            }
+            activity.tacticObject = JSON.stringify(tacticObject);
+            activity.beginDate = new Date(activity.beginDate);
+            activity.endDate = new Date(activity.endDate);
+            $.ajax({
+                data: activity,
+                dataType: "json",
+                type: "post",
+                url: "${basePath}/admin/product/activity/doEdit",
+                success: function (data) {
+                    if (data.success) {
+                        window.parent.location.reload();
+                    } else {
+                        layer.msg(data.message);
+                    }
+                },
+                error: function () {
+                    layer.msg("未知错误！");
+                }
+            })
+        });
+        form.on('select(tactic)', function (data) {
+            var content;
+            if (data.value == 0) {
+                content = $("#cut_price").html();
+                content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+                $("#show_info").html(content);
+            } else if (data.value == 1) {
+                content = $("#satisfy_price").html();
+                content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+                $("#show_info").html(content);
+            } else if (data.value == 2) {
+                var content = $("#gift_select").html();
+                content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+                $("#show_info").html(content);
+                $(".select_gift").select2({
+                    placeholder: '请选择赠品',
+                    allowClear: true,
+                    width: "100%",
+                    language: "zh-CN",
+                    theme: "classic"
+                });
+                $(".select_satisfy").select2({
+                    placeholder: '请选择赠送条件',
+                    width: "100%",
+                    language: "zh-CN",
+                    theme: "classic",
+                    minimumResultsForSearch: -1
+                });
+            } else if (data.value == 3) {
+                var content = $("#free_Shipping").html();
+                content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+                $("#show_info").html(content);
+                $(".select_satisfy").select2({
+                    placeholder: '请选择包邮条件',
+                    width: "100%",
+                    language: "zh-CN",
+                    theme: "classic",
+                    minimumResultsForSearch: -1
+                });
+            }
+            form.render();
+        });
+    });
+    function selectSatisfy(option, value) {
+        var select = $(option).val();
+        if (value != undefined) {
+            select = value;
+        }
+        var showDiv = $("#gift_satisfy_select");
+        var content;
+        if (select == 0) {
+            content = $("#gift_satisfy_price").html().replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+        } else {
+            content = $("#gift_satisfy_count").html().replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+        }
+        showDiv.html(content);
+    }
+
+    //初始化一系列表格
+    function init() {
+        var tacticKey = ${(activity.tacticKey)!0};
+        var content;
+        if (tacticKey == 1) {
+            content = $("#satisfy_price").html();
+            content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+            $("#show_info").html(content);
+        } else if (tacticKey == 2) {
+            var content = $("#gift_select").html();
+            content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+            $("#show_info").html(content);
+            $(".select_gift").select2({
+                placeholder: '请选择赠品',
+                allowClear: true,
+                width: "100%",
+                language: "zh-CN",
+                theme: "classic"
+            });
+            $(".select_satisfy").select2({
+                placeholder: '请选择赠送条件',
+                width: "100%",
+                language: "zh-CN",
+                theme: "classic",
+                minimumResultsForSearch: -1
+            });
+        <#if giftSatisfyPrice??>
+            selectSatisfy("", 0);
+        </#if>
+        <#if giftSatisfyCount??>
+            selectSatisfy("", 1);
+        </#if>
+        }
+        form.render();
+    }
+    //将表单封装为json
+    $.fn.serializeJSON = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+</script>
+</body>
+</html>

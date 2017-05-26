@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xinqi.graduationdesign.mapper.PsysEmpMapper">
+
+	<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		id, name, gender, deptId, education, status, birth, origin, nation, idCardNumber, marry, politics, blood, workStartTime, address, phone, userId, email, createDate,lastDate
+	</sql>
+	<select id="selectUserVObyId" resultType="UserVO">
+		SELECT u.id userId,u.type,emp.id empId,emp.`name` empName,emp.`status`,emp.lastDate,emp.workStartTime
+		FROM `sys_user` u INNER JOIN psys_emp emp on emp.userId= u.id WHERE emp.status != 2
+		<if test="deptId != null">
+			emp.deptId = #{deptId}
+		</if>
+		limit #{pageCount},#{pageSize};
+	</select>
+	<select id="selectEmpVOList" resultType="com.xinqi.graduationdesign.entity.vo.EmpVO">
+		select emp.id empId,emp.`status` empStatus,emp.`name` empName,emp.lastDate,dept.deptName,u.type from psys_emp emp
+		INNER JOIN psys_dept dept on dept.id = emp.deptId
+		INNER JOIN sys_user u on emp.userId = u.id
+		where emp.`status` != 2
+		limit #{pageCount},#{pageSize}
+	</select>
+	<select id="selectEmpVOListCount" resultType="int">
+		select count(*) from psys_emp emp
+		INNER JOIN psys_dept dept on dept.id = emp.deptId
+		INNER JOIN sys_user u on emp.userId = u.id
+		where emp.`status` != 2
+	</select>
+	<select id="selectEmpVO" resultType="com.xinqi.graduationdesign.entity.vo.EmpVO">
+		select emp.id empId,emp.`status` empStatus,emp.`name` empName,emp.lastDate,emp.deptId,dept.deptName,u.type from psys_emp emp
+		INNER JOIN psys_dept dept on dept.id = emp.deptId
+		INNER JOIN sys_user u on emp.userId = u.id
+		where emp.id = #{empId};
+	</select>
+</mapper>

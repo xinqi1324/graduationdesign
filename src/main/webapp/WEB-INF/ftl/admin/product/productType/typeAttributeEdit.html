@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <#include "/admin/common/header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content" style="width: 430px;">
+    <form id="myForm" class="form-horizontal" enctype="multipart/form-data" autocomplete="off" data-validator-option="{theme:'default'}">
+        <#if (attr)??>
+            <input type="hidden" name="id" value="${(attr.id?c)!}">
+            <input type="hidden" name="productTypeId" value="${(attr.productTypeId?c)!}">
+            <input type="hidden" name="_date" value="${(attr.createDate?datetime)!}">
+            <input type="hidden" name="isEnabled" value="${(attr.isEnabled?string('1','0'))!}">
+
+            <#else>
+                <input type="hidden" name="isEnabled" value="1">
+                <input type="hidden" name="productTypeId" value="${(typeId?c)!}">
+        </#if>
+
+        <div class="form-group"><label class="col-sm-2 control-label">属性名称</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" value="${(attr.name)!}" name="name" id="name"
+                       data-rule="属性名称:required;loginName">
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+
+        <div class="form-group"><label class="col-sm-2 control-label">是否必须</label>
+            <div class="col-sm-10">
+                是<input type="radio" name="isRequired" checked value="1" class="radio-inline">&nbsp;
+                否<input type="radio" name="isRequired" value="0" class="radio-inline">
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group"><label class="col-sm-2 control-label">排序</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" value="${(attr.sort)!}" name="sort" id="sort"
+                       data-rule="排序:required">
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="form-group"><label class="col-sm-2 control-label">类型</label>
+            <div class="col-sm-10">
+                <select  name="attributeType" id="attributeType" class="form-control m-b">
+                    <#list attributeType as attrType>
+                        <option value="  ${attrType_index}"
+                        <#if attr??>
+                            <#if attr.attributeType == attrType_index>selected</#if>
+                        </#if>>
+                            ${attrType}
+                        </option>
+                    </#list>
+                </select>
+            </div>
+        </div><div class="form-group"><label class="col-sm-2 control-label">类型选项</label>
+            <div class="col-sm-10" id="types">
+                <button type="button" class="btn btn-default btn-sm" id="addType">
+                    <span class="glyphicon glyphicon-plus"></span> 添加选项
+                </button>
+                <br/>
+                <br/>
+              </button>
+                <#if (attr.attributeOptionStore)??>
+                    <#list (attr.attributeOptionStore)?split(",") as attrType>
+                        <div>
+                            <input type="text" class="form-control" style="width: 90%;display: inline" name="attributeOptionStore" value="${attrType}">
+                            <button type="button" class="btn btn-default btn-sm" style="display: inline" onclick="delDiv(this)">
+                                <span class="glyphicon glyphicon-minus"></span></button>
+                        </div>
+                    </#list>
+                </#if>
+            </div>
+
+        </div>
+
+        <div class="hr-line-dashed"></div>
+        <div class="alert alert-danger alert-dismissable" hidden id="_error">
+            <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">
+                &times;
+            </button>
+        </div>
+
+        <div class="form-group">
+            <div class="text-center">
+                <button class="btn btn-primary" type="button" id="_submit" >
+                    <#if attr??>修改
+                        <#else>新增
+                    </#if>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+<script src="${basePath}/static/plugins/nice-validator-0.8.1/jquery.validator.js?local=zh-CN"></script>
+<script type="text/javascript">
+
+
+    //提交表单
+    $(function () {
+        var msg = "";
+        $("#_submit").click(function () {
+            var name = $("#name").val();
+            var sort = $("#sort").val();
+            var types = $("input[name='attributeOptionStore']");
+            types.each(function(index,type){
+                if(type.value.length < 1){
+                    msg = "任何选项都不能为空！"
+                    return false;
+                }
+            });
+            if(name.length < 1){
+                msg = "属性名称不能为空！"
+            }else if(sort.length < 1){
+                msg = "排序不能为空！"
+            }
+            if(msg.length >= 1){
+                //给出提示信息
+                $("#_error").html(msg);
+                $("#_error").removeAttr("hidden");
+                msg = "";
+                return;
+            }
+//            if($("#name").val().length < 1 && $("#sort").val().length < 1 ){
+//                return;
+//            }
+            var form = $("#myForm");
+            var formDate = form.serialize();
+            console.log(formDate);
+//            return;
+            var option= {
+                url:"${basePath}/admin/productAttribute/editProductAttribute",
+                type:"POST",
+                date:form.serialize(),
+                //提交前执行的回调函数
+                beforeSubmit:function(){
+                    //判断当前name是否改变
+                    if(name.length >= 1 && name == $("#name").val()){
+                        return true;
+                    }
+                    //设置一个标志记录是否成功
+                    var flag = false;
+                    //判断是否存在相同名称
+                    $.ajax({
+                        url: "${basePath}/admin/productAttribute/judgement",
+                        data: form.serialize(),
+                        type: "POST",
+                        //需要同步
+                        async : false,
+                        success: function(data){
+                            var d = JSON.parse(data);
+                            if(d.success && d.data){
+                                //如果没有重复，则进入下一步
+                                flag = true;
+                            } else {
+                                //如果有重复，则给出提示，并终止当前提交
+                                flag = false;
+                                msg = "属性名称重复，请修改属性名称！";
+                            }
+                        },
+                        error: function () {
+                            flag = false;
+                            msg = "发生了未知错误，请稍后重试！";
+                        }
+                    });
+                    if(msg.length >= 1){
+                        //给出提示信息
+                        $("#_error").html(msg);
+                        $("#_error").removeAttr("hidden");
+                    }
+                    return flag;
+                },
+                //提交成功后执行的回调函数
+                success:function(data){
+                    var d = JSON.parse(data);
+                    if(d.success && d.data){
+                        window.parent.location.reload();
+                    }else{
+                        //添加失败
+                        msg = "操作失败，请重试！";
+                        $("#_error").html(msg);
+                        $("#_error").removeAttr("hidden");
+                    }
+                },
+                //提交失败执行的函数
+                error:function(){
+                    //500错误
+                    msg = "服务器错误，请稍后重试或联系管理员！";
+                    $("#_error").html(msg);
+                    $("#_error").removeAttr("hidden");
+                },
+//            clearForm:true,　　　　　　 //提交成功后是否清空表单中的字段值
+//            restForm:true,　　　　　　  //提交成功后是否重置表单中的字段值，即恢复到页面加载时的状态
+//            timeout:6000 　　　　　 　 //设置请求时间，超过该时间后，自动退出请求，单位(毫秒)。　　
+//            target:target,　　//服务器返回的响应数据显示的元素(Id)号
+//            beforeSerialize:function(){} //序列化提交数据之前的回调函数
+//            dataType:"JSON",　　　　　　　//服务器返回数据类型
+            }
+            form.ajaxSubmit(option);
+        })
+
+
+        //添加选项栏
+        $("#addType").click(
+            function () {
+                var div =   '<div><input type="text" class="form-control" style="width: 90%;display: inline" name="attributeOptionStore"> ' +
+                        '<button type="button" class="btn btn-default btn-sm" style="display: inline" onclick="delDiv(this)">' +
+                        '<span class="glyphicon glyphicon-minus"></span></button></div>';
+                $("#types").append(div);
+        })
+
+    });
+
+    function delDiv(_div){
+        _div.parentNode.remove();
+//        _div.remove();
+    }
+</script>
+</body>
+</html>

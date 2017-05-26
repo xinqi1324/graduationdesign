@@ -1,0 +1,41 @@
+<#include "/front/common/member_framework.html" />
+<#macro css>
+<link rel="stylesheet" href="${basePath}/frontStatic/css/front404.css">
+</#macro>
+<#macro script>
+<script>
+    $(function () {
+        var time = 10;
+        $('#time').text(time);
+        setInterval(function () {
+            time--;
+            $('#time').text(time);
+            if ($('#time').text() <= 0) {
+                window.location.href = "${basePath}/";
+            }
+        }, 1000);
+    });
+</script>
+</#macro>
+<@framework title="错误页面">
+<section>
+    <div class="Logo_line">
+    <div><a href="${basePath}/"><img src="${basePath}/frontStatic/images/index/logo.png" alt="" width="150px"></a></div>
+    </div>
+    <div class="Receiving_information_content">
+        <br><br>
+        <div class="Evaluation_of_success">
+            <img src="${basePath}/frontStatic/images/error.jpg" width="200" height="150">
+            <div class="Evaluation_of_success_01">
+                <h3>很抱歉，您查看的页面找不到了！</h3>
+                <div class="tip-hint">
+                    <span id="time" style="font-size:16px;color:red"></span>后跳转首页
+                    <a href="${basePath}/">返回商城首页&gt;</a>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="clean_float"></div>
+    </div>
+</section>
+</@framework>

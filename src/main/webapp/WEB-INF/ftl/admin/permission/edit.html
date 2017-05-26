@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "../common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+   <form class="layui-form layui-form-pane">
+   	   <input type="hidden" name="id" value="${(permission.id?c)!}">
+       <div class="layui-form-item">
+           <label class="layui-form-label">权限名称</label>
+           <div class="layui-input-block">
+                <input type="text"  value="${(permission.title)!}" name="title" id="title" placeholder="请输入权限名称"
+                        lay-verify="required" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">父节点</label>
+           <div class="layui-input-block">
+                <#if parent??>
+                    <input type="hidden" name="pid" value="${(parent.id?c)!}">
+                    <input type="text" readonly value="${parent.title}" class="layui-input">
+                <#else>
+                    <select  name="pid" id="pid">
+                        <option value="0">无</option>
+                        <#list permissions as perm>
+                            <#if !(permission.id)?? || perm.id !=permission.id>
+                                <option value="${perm.id?c}" <#if (permission.id)?? && perm.id == permission.pid>selected</#if>  >${perm.title}</option>
+                            </#if>
+                        </#list>
+                    </select>
+                </#if>
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">权限类型</label>
+           <div class="layui-input-block">
+                <select name="type">
+                    <option value="0"selected >菜单</option>
+                    <option value="1" <#if (permission.type)??><#if permission.type == 1>selected</#if></#if>>功能</option>
+                </select>
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">状态</label>
+           <div class="layui-input-block">
+               <input type="radio" name="state" checked value="0"  title="正常">
+               <input type="radio" name="state" value="1" title="禁用">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">权限地址</label>
+           <div class="layui-input-block">
+               <input type="text" value="${(permission.url)!}" name="Url" placeholder="请输入权限地址"
+                      lay-verify="required" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">排序</label>
+           <div class="layui-input-block">
+               <input type="text" value="${(permission.sort)!}" name="sort" placeholder="请输入排序"
+                      lay-verify="number" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">权限编码</label>
+           <div class="layui-input-block">
+               <input type="text" value="${(permission.permCode)!}" name="permCode" placeholder="请输入权限编码"
+                      lay-verify="number" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">图标</label>
+           <div class="layui-input-block">
+               <input type="text" class="layui-input" value="${(permission.icon)!}" name="icon">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">描述</label>
+           <div class="layui-input-block">
+               <input type="text" class="layui-input" value="${(permission.description)!}" name="description" data-rule="描述:required;">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <div class="layui-input-block">
+               <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+               <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+           </div>
+       </div>
+        <!--<div class="form-group">
+            <div class="text-center">
+                &lt;!&ndash;<#if permission??> <button class="btn btn-primary" type="submit">修改</button>&ndash;&gt;
+                    &lt;!&ndash;<#else> <button class="btn btn-primary" type="submit" >新增</button></#if>&ndash;&gt;
+                <button class="btn btn-primary" type="submit"><#if permission??>修改<#else>新增</#if></button>
+            </div>
+        </div>-->
+    </form>
+</div>
+<script type="text/javascript">
+    var url = "${basePath}/sys/perm/permission/editPerm";
+</script>
+<#include "../common/form_js.html" />
+
+</body>
+</html>

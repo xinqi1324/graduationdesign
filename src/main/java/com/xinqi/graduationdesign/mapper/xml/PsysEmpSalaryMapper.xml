@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xinqi.graduationdesign.mapper.PsysEmpSalaryMapper">
+
+	<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		id, empId, baseSalary, mealsSalary, tax, fullAttendenceSalary, salary, operatorId, isNew, createDate
+	</sql>
+	<select id="selectAllEmpSalaryVO" resultType="com.xinqi.graduationdesign.entity.vo.EmpSalaryVO">
+		select emp.`name`,emp.id empId,emp.deptId,emps.* ,u.type FROM psys_emp emp
+		LEFT JOIN psys_emp_salary emps on emp.id=emps.empId
+		INNER JOIN sys_user u on u.id = emp.userId
+		where emp.status != 2 and u.type != 1 and u.type != 6 and (isNew is NULL or isNew=1)
+		limit #{pageCount},#{pageSize};
+	</select>
+	<select id="selectAllEmpSalaryVOCount" resultType="int">
+		select count(*) FROM psys_emp emp
+		LEFT JOIN psys_emp_salary emps on emp.id=emps.empId
+		INNER JOIN sys_user u on u.id = emp.userId
+		where emp.status != 2 and u.type != 1 and u.type != 6  and (isNew is NULL or isNew=1);
+	</select>
+</mapper>

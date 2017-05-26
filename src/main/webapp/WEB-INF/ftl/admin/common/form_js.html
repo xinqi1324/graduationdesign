@@ -1,0 +1,30 @@
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script type="text/javascript">
+    layui.use(['jquery', 'form'], function(){
+        var $ = layui.jquery, form = layui.form();
+        var lock = false;
+        form.on('submit(laySubmit)', function(formMsg){
+            if(!lock) {
+                lock = true;
+                $.ajax({
+                    url: url,
+                    dataType: "json",
+                    data: $("form").serialize(), //formMsg.field
+                    type: "POST",
+                    success: function (data) {
+                        if (data.success) {
+                            window.parent.location.reload();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.close(index);
+                            });
+                            //失败，提交表单成功后，释放锁，如果不释放锁，就变成了只能提交一次的表单
+                            lock = false;
+                        }
+                    }
+                });
+            }
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>

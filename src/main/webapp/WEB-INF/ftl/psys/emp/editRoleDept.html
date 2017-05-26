@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+   <form class="layui-form layui-form-pane">
+       <input type="hidden" name="empId" value="${emp.empId?c}">
+       <div class="layui-form-item">
+           <label class="layui-form-label">姓名</label>
+           <div class="layui-input-block">
+               <input type="text" class="layui-input" value="${emp.empName}" readonly>
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">职称</label>
+           <div class="layui-input-block">
+               <select name="type" >
+                   <#list sysRoles as role>
+                       <#if emp.type?c == role.id?c>
+                           <option value="${role.id?c}" name="type" selected>${role.name}</option>
+                       <#else>
+                           <option value="${role.id?c}" name="type">${role.name}</option>
+                       </#if>
+                   </#list>
+               </select>
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">员工部门</label>
+           <div class="layui-input-block">
+               <select name="deptId" lay-verify="required">
+                   <#list depts as dept>
+                       <#if dept.id?c == emp.deptId?c>
+                           <option value="${dept.id?c}" name="deptId" selected>${(dept.deptName)!}</option>
+                       <#else>
+                           <option value="${dept.id?c}"  name="deptId">${(dept.deptName)!}</option>
+                       </#if>
+                   </#list>
+               </select>
+           </div>
+       </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+       <div class="layui-form-item">
+           <div class="layui-input-block">
+               <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+               <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+           </div>
+       </div>
+    </form>
+</div>
+<script type="text/javascript">
+    var url = "${basePath}/admin/emp/doEditRoleDept";
+</script>
+<#include "/admin/common/form_js.html" />
+</body>
+</html>

@@ -1,0 +1,116 @@
+<#include "/admin/common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>请假管理</a></li><li class="active"><strong>个人请假</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script type="text/javascript">
+    var editUrl = "${basePath}/admin/leave/insert.html";
+    var area = ['700px', '350px'];
+
+    var dataUrl = "${basePath}/admin/leave/getUserLeaveList.html";
+
+    function formatDate_(time) {
+        if (time == '' || time == null || time == undefined) return '';
+        var datetime = new Date();
+        datetime.setTime(time);
+        var year = datetime.getFullYear();
+        var month = datetime.getMonth() + 1 < 10 ? "0" + (datetime.getMonth() + 1) : datetime.getMonth() + 1;
+        var date = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+        return year + "年" + month + "月" + date + "日 " ;
+    }
+    var dataColumns = [{
+        title: '申请日期',
+        formatter: function (value, row, index) {
+            return formatDate_(row.beginDate) + "至 " + formatDate_(row.endDate);
+        }
+    }, {
+        title:'总天数',
+        field:'dateCount'
+    },
+        {
+		formatter: function(value, row, index){
+            <#list leaveStatusTypes as statusType>
+                if(row.status == ${(statusType.key())?c}){
+                    return "${statusType.desc()}";
+                }
+            </#list>
+		},
+        title: '审批状态'
+    }, {
+            title: '创建日期',
+            formatter: function (value, row, index) {
+                    return formatDate(row.createDate);
+            }
+        },{
+        title: '审批时间',
+        formatter: function (value, row, index) {
+            if (row.operatorDate != undefined){
+                return formatDate(row.operatorDate);
+            }else{
+                return "暂未审批";
+            }
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-danger" onclick="cancelLeave(' + "'" + id + "'" + ')"><i class="fa fa-search-plus"></i>取消请假</a>';
+        }
+    }];
+function cancelLeave(id) {
+        var delUrl = "${basePath}/admin/leave/cancel.html";
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            layer.confirm('确定取消该请假吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                $.ajax({
+                    type: "POST",
+                    url: delUrl + "?id=" + id ,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.success) {
+                            $('#dataTable').bootstrapTable('refresh', {url: dataUrl});
+                            layer.closeAll();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.closeAll();
+                            });
+                        }
+                    }
+                });
+            }, function () {
+                return;
+            });
+        })
+}
+</script>
+</#macro>
+<@framework title="请假管理">
+<div class="row">
+    <div class="ibox-content text-right form-inline" style="background: #F3F3F4;">
+        <div class="input-group">
+            <input type="text" class="form-control">
+            <span class="input-group-btn">
+				<button type="button" class="btn btn-info">搜索</button>
+			</span>
+        </div>
+        <button class="btn btn-primary" onclick="editEntity(null)" type="button">
+            <i class="fa fa-pencil"></i>&nbsp;添加请假</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+</@framework>

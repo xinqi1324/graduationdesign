@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+   <form class="layui-form layui-form-pane">
+       <input type="hidden" name="id" value="${(empSalary.id?c)!}">
+       <input type="hidden" name="empId" value="${empId?c}">
+       <div class="layui-form-item">
+           <label class="layui-form-label">基本工资</label>
+           <div class="layui-input-block">
+               <input type="text" name="baseSalary" placeholder="请输入基本工资"
+                      lay-verify="salary" autocomplete="off" class="layui-input" value="${(empSalary.baseSalary?c)!}">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">餐补</label>
+           <div class="layui-input-block">
+               <input type="text" name="mealsSalary" placeholder="请输入餐补"
+                      lay-verify="salary" autocomplete="off" class="layui-input" value="${(empSalary.mealsSalary?c)!}">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">全勤奖</label>
+           <div class="layui-input-block">
+               <input type="text" name="fullAttendenceSalary" placeholder="全勤奖"
+                      lay-verify="salary" autocomplete="off" class="layui-input" value="${(empSalary.fullAttendenceSalary?c)!}">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <div class="layui-input-block">
+               <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+               <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+           </div>
+       </div>
+    </form>
+</div>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script type="text/javascript">
+    var url = "${basePath}/admin/salary/insertEmpSalary";
+    layui.use(['jquery', 'form'], function(){
+        var $ = layui.jquery, form = layui.form();
+        var lock = false;
+        form.verify({
+            salary:function (value, item) {
+                var reg = /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/;
+                if(!reg.test(value)){
+                    return '请输入正确金额';
+                }
+            }
+        });
+        form.on('submit(laySubmit)', function(formMsg){
+            if(!lock) {
+                lock = true;
+                $.ajax({
+                    url: url,
+                    dataType: "json",
+                    data: $("form").serialize(), //formMsg.field
+                    type: "POST",
+                    success: function (data) {
+                        if (data.success) {
+                            window.parent.location.reload();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.close(index);
+                            });
+                            //失败，提交表单成功后，释放锁，如果不释放锁，就变成了只能提交一次的表单
+                            lock = false;
+                        }
+                    }
+                });
+            }
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+</body>
+</html>

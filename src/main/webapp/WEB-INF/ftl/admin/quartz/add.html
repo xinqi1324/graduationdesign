@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Quartz 测试</title>
+    <link href="${basePath}/static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="${basePath}/static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="${basePath}/static/plugins/iCheck/css/custom.css" rel="stylesheet">
+    <link href="${basePath}/static/css/animate.min.css" rel="stylesheet">
+    <link href="${basePath}/static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="form-group">
+            <div class="col-sm-10">Quartz添加JOB功能测试</div>
+            <br>
+        </div>
+        <form action="${basePath}/quartz/add.html" method="post">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <input type="text" name="jobName" class="form-control" placeholder="请输入您用来测试的Job名称">
+                       <span class="input-group-btn">
+                       <button type="submit" class="btn btn-primary">添加
+                       </button> </span>
+                    </div>
+                </div>
+                <br>
+            </div>
+        </form>
+        <#if tipMsg??>
+        <div class="form-group"><br>
+            <div class="col-sm-10">
+                <div class="alert alert-success">${tipMsg}</div>
+            </div>
+        </div>
+        </#if>
+    </div>
+</div>
+<script src="${basePath}/static/js/jquery.min.js?v=2.1.4"></script>
+<script src="${basePath}/static/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="${basePath}/static/js/content.min.js?v=1.0.0"></script>
+<script src="${basePath}/static/plugins/iCheck/js/icheck.min.js"></script>
+</body>
+</html>

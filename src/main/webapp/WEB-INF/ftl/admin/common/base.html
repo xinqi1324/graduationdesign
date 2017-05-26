@@ -1,0 +1,17 @@
+<#macro script>
+</#macro>
+<#macro css>
+</#macro>
+<#macro base title="" >
+<!DOCTYPE html>
+<html>
+<head>
+	<#include "header.html" />
+	<@css />
+</head>
+<#nested>
+<script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+<script src="${basePath}/static/js/bootstrap.min.js"></script>
+<@script />
+</html>
+</#macro>

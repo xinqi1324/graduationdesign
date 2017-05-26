@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+   <form class="layui-form layui-form-pane">
+       <div class="layui-form-item">
+           <label class="layui-form-label">请假时间</label>
+           <div class="layui-input-inline">
+               <input class="layui-input" placeholder="请选择开始日期" onclick="layui.laydate({elem: this, istime: true, format: 'YYYY-MM-DD'})"
+               type="text"lay-verify="date" id="beginDate" name="beginDate">
+
+           </div>
+           <div class="layui-input-inline">
+           <input class="layui-input" placeholder="请选择结束日期" onclick="layui.laydate({elem: this, istime: true, format: 'YYYY-MM-DD'})"
+           type="text" lay-verify="date" id="endDate" name="endDate">
+            </div>
+       </div>
+       <div class="layui-form-item layui-form-text">
+           <label class="layui-form-label">请假原因</label>
+           <div class="layui-input-block">
+               <textarea name="reason" placeholder="请输入请假原因" class="layui-textarea"></textarea>
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <div class="layui-input-block">
+               <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+               <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+           </div>
+       </div>
+    </form>
+</div>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script type="text/javascript">
+    layui.use('laydate', function() {
+        var laydate = layui.laydate;
+        var start = {
+            min: laydate.now()
+            , max: '2099-06-16 23:59:59'
+            , istoday: false
+            , choose: function (datas) {
+                end.min = datas; //开始日选好后，重置结束日的最小日期
+                end.start = datas //将结束日的初始值设定为开始日
+            }
+        };
+
+        var end = {
+            min: laydate.now()
+            , max: '2099-06-16 23:59:59'
+            , istoday: false
+            , choose: function (datas) {
+                start.max = datas; //结束日选好后，重置开始日的最大日期
+            }
+        };
+    });
+    layui.use(['jquery', 'form','layer'], function(){
+        var $ = layui.jquery, form = layui.form(),layer=layui.layer;
+        var lock = false;
+        form.on('submit(laySubmit)', function(formMsg){
+            var beginDate = Date.parse($("#beginDate").val());
+            var endDate = Date.parse($("#endDate").val());
+            if(beginDate > endDate){
+                layer.alert('开始日期不能在结束日期之后!', {
+                    icon: 2
+                });
+                return false;
+            }
+            if(!lock) {
+                lock = true;
+                $.ajax({
+                    url: "${basePath}/admin/leave/insertLeave",
+                    dataType: "json",
+                    data: $("form").serialize(), //formMsg.field
+                    type: "POST",
+                    success: function (data) {
+                        if (data.success) {
+                            window.parent.location.reload();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.close(index);
+                            });
+                            //失败，提交表单成功后，释放锁，如果不释放锁，就变成了只能提交一次的表单
+                            lock = false;
+                        }
+                    }
+                });
+            }
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+
+</script>
+</body>
+</html>

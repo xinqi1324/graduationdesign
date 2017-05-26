@@ -1,0 +1,104 @@
+<#include "../../common/framework.html" />
+<#macro css>
+<link href="${basePath}/static/plugins/bootstrap-table/css/bootstrap-table.min.css" rel="stylesheet">
+</#macro>
+<#macro breadcrumb>
+<li><a>交易管理</a></li><li class="active"><strong>配送方式管理</strong></li>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/bootstrap-table-mobile.min.js"></script>
+<script src="${basePath}/static/plugins/bootstrap-table/js/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script src="${basePath}/static/js/base_list.js"></script>
+<script src="${basePath}/static/js/common.js"></script>
+<script type="text/javascript">
+	var editUrl = "${basePath}/admin/trade/deliveryType/edit.html";
+	var delUrl = "${basePath}/admin/trade/deliveryType/delDeliveryType.html";
+    var area = ['600px', '700px'];
+
+    var dataUrl = "${basePath}/admin/trade/deliveryType/getList.html";
+    var dataColumns = [{
+        field: 'name',
+        title: '配送方式名称'
+    },{
+        field: 'continueWeight',
+        title: '续重量'
+    }, {
+        field: 'continueWeightPrice',
+        title: '续重单价'
+    }, {
+        field: 'continueWeightUnit',
+        title: '续重单位'
+    },{
+        field: 'description',
+        title: '说明'
+    },{
+        field: 'firstWeight',
+        title: '初始重量'
+    },{
+        field: 'firstWeightPrice',
+        title: '初始价格'
+    },{
+        field: 'firstWeightUnit',
+        title: '初始重量单位'
+    },{
+        field: 'sort',
+        title: '排序'
+    },{
+		formatter: function(value, row, index){
+			var deliveryMethod = row.deliveryMethod;
+			if(deliveryMethod == 1){
+				return "1"
+			}
+			return "0";
+		},
+        title: '配送方式'
+    }, {
+        field: 'createDate',
+        title: '创建时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.createDate);
+        }
+    }, {
+        field: 'modifyDate',
+        title: '最后更新时间',
+        formatter: function (value, row, index) {
+            return formatDate(row.modifyDate);
+        }
+    }, {
+        title: '操作',
+        formatter: function (value, row, index) {
+            var id = row.id;
+            return '<a class="btn btn-xs btn-warning" onclick="editEntity(' + "'" + id + "'"  +')"><i class="fa fa-pencil"></i>编辑</a> '
+                + '<a class="btn btn-xs btn-danger" onclick="delEntity(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a> '
+                + '<a class="btn btn-xs btn-primary" onclick="setDefault(' + "'" + id + "'" + ')"><i class="fa fa-book"></i>设为默认</a>'
+
+        }
+    }
+    ];
+
+
+</script>
+</#macro>
+<@framework title="配送方式">
+<div class="row">
+	<form id="searchForm" class="ibox-content text-right form-inline" onsubmit="javascript:return false;">
+		<div class="input-group">
+			<span class="input-group-addon">
+				名称
+			</span>
+			<input type="text" name="name" class="form-control">
+		</div>
+		<button class="btn btn-info" onclick="_search()" type="button">
+			<i class="fa fa-pencil"></i>&nbsp;搜索</button>
+		<button class="btn btn-primary" onclick="editEntity(null)" type="button">
+			<i class="fa fa-pencil"></i>&nbsp;添加配送方式</button>
+	</form>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="dataTable"></table>
+    </div>
+</div>
+</@framework>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "../common/form_header.html" />
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+   <form class="layui-form layui-form-pane">
+   	   <input type="hidden" name="id" value="${(user.id?c)!}">
+       <div class="layui-form-item">
+           <label class="layui-form-label">用户名</label>
+           <div class="layui-input-block">
+               <input type="text" value="${(user.loginName)!}" name="loginName" placeholder="请输入用户名"
+                      lay-verify="required" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">姓名</label>
+           <div class="layui-input-block">
+               <input type="text" value="${(user.nickName)!}" name="nickName" placeholder="请输入用户姓名"
+                      lay-verify="required" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">登录密码</label>
+           <div class="layui-input-block">
+           		<input type="password" name="password" placeholder="请输入用户密码"
+                       lay-verify="required" autocomplete="off" class="layui-input">
+           </div>
+       </div>
+       <div class="layui-form-item">
+           <label class="layui-form-label">用户角色</label>
+            <div class="layui-input-block">
+            <select name="type">
+                <option id="${sysRole.id?c}" value="${sysRole.id?c}">${sysRole.name!}</option>
+            </select>
+            </div>
+        </div>
+       <div class="layui-form-item">
+           <div class="layui-input-block">
+               <button class="layui-btn" lay-submit lay-filter="laySubmit">立即提交</button>
+               <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+           </div>
+       </div>
+    </form>
+</div>
+<script type="text/javascript">
+    var url = "${basePath}/sys/perm/user/editUser";
+</script>
+<#include "../common/form_js.html" />
+</body>
+</html>

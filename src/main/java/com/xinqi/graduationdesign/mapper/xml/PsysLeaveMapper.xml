@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xinqi.graduationdesign.mapper.PsysLeaveMapper">
+
+	<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		id, empId, userId, deptId, status, beginDate, endDate, dateCount, operatorId,operatorDate,createDate,isRead,reason
+	</sql>
+	<select id="selectLeaveVOs" resultType="com.xinqi.graduationdesign.entity.vo.LeaveVO">
+		SELECT sleave.id,sleave.empId empId,sleave.beginDate,sleave.dateCount,sleave.endDate,sleave.createDate,sleave.deptId,sleave.operatorDate,sleave.`status`,emp.`name`,u.type
+		FROM `psys_leave` sleave
+		INNER JOIN psys_emp emp on emp.id = sleave.empId
+		INNER JOIN sys_user u on u.id = sleave.userId
+		WHERE u.id != #{userId} and sleave.status != #{status}
+		<if test="deptId != null">
+			and sleave.deptId = #{deptId}
+		</if>
+		limit #{pageCount},#{pageSize};
+	</select>
+	<select id="selectLeaveVOsCount" resultType="int">
+		SELECT count(*) count FROM `psys_leave` sleave
+		INNER JOIN psys_emp emp on emp.id = sleave.empId
+		INNER JOIN sys_user u on u.id = sleave.userId
+		WHERE u.id != #{userId} and sleave.status != #{status}
+		<if test="deptId != null">
+			and sleave.deptId = #{deptId}
+		</if>
+	</select>
+	<select id="selectLeaveVObyId" resultType="com.xinqi.graduationdesign.entity.vo.LeaveVO">
+		SELECT sleave.id,sleave.empId empId,sleave.beginDate,sleave.endDate,sleave.dateCount,sleave.createDate,sleave.deptId,sleave.operatorDate,sleave.`status`,emp.`name`,u.type
+		FROM `psys_leave` sleave
+		INNER JOIN psys_emp emp on emp.id = sleave.empId
+		INNER JOIN sys_user u on u.id = sleave.userId
+		WHERE sleave.id = #{id} ORDER by sleave.createDate DESC ;
+	</select>
+</mapper>

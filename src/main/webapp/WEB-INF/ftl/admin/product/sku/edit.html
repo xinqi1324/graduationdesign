@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/layui/css/layui.css">
+</head>
+<body class="white-bg">
+<div class="ibox-content">
+    <form id="myForm" class="layui-form layui-form-pane" action="">
+        <input type="hidden" name="id" value="${(sku.id?c)!}">
+        <input type="hidden" name="productId" id="productId" value="${(productId?c)!}">
+        <input type="hidden" id="_flag" value="<#if (specifications?size >= 1)>true<#else>false</#if>">
+    <#if (specifications?size >= 1)>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>请选择规格</legend>
+        </fieldset>
+    <#else>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>此商品分类暂无规格，请填写商品信息</legend>
+        </fieldset>
+    </#if>
+    <#--遍历规格-->
+    <#if (specifications?size >= 1)>
+        <#list specifications as specification>
+            <div class="layui-form-item">
+                <label class="layui-form-label">${specification.name}</label>
+                <div class="layui-input-block" specification="true">
+                    <#list specification.attributeOptionStore?split(",") as _spec>
+                        <#assign alias = _spec>
+                        <#assign  checked = "">
+                        <#list attributes as attribute>
+                            <#if attribute.mapkeyId == specification.id && attribute.element == _spec>
+                                <#assign checked = "checked">
+                                <#if attribute.elementAlias?length gt 0>
+                                <#--判断是否有别名-->
+                                    <#assign alias =attribute.elementAlias>
+                                </#if>
+                            </#if>
+                        </#list>
+                        <input type="hidden" value="${specification.id?c}"/>
+                        <input type="checkbox" value="${_spec}" lay-filter="select"
+                               <#if specification.type == 4>img="true"</#if> title="${alias}" ${checked}>
+                        <input type="hidden" value="${alias!_spec}"/>
+                        <a onclick="showAliasInput(this)"><i class="layui-icon" style="font-size: 15px; ">
+                            &#xe642;</i></a>
+                        <input type="text" value="${alias!_spec}" style="width: 10%;height: 25px;" onblur="alias(this)"
+                               hidden="hidden">
+                    </#list>
+                </div>
+            </div>
+        </#list>
+        <button class="layui-btn" type="button" id="showTable">
+            确定
+        </button>
+    </#if>
+        <div>
+        <#if (specifications?size >= 1)>
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>请选择图片</legend>
+            </fieldset>
+
+            <table class="layui-table" id="imgDiv">
+                <thead>
+                <tr>
+                    <td>规格名称</td>
+                    <td>规格选项</td>
+                    <td>图片(无图片可不填)</td>
+                </tr>
+                </thead>
+                <tbody id="imgTBody">
+                    <#list specifications as specification>
+                        <#if specification.type == 4>
+                            <#list specification.attributeOptionStore?split(",") as imgName>
+                            <tr imgTable="${imgName}" attrId="${specification.id?c}"
+                                <#assign img = "">
+                                <#list attributes as attribute>
+                                    <#if attribute.mapkeyId?c == specification.id?c && imgName == attribute.element>
+                                        <#assign img = attribute.elementImg!>
+                                        <#assign imgAlias = attribute.elementAlias!>
+                                        <#assign hidden="">
+                                        <#break>
+                                    <#else>
+                                        <#assign hidden="hidden">
+                                    </#if>
+                                </#list>
+                            ${hidden}>
+                                <td>${specification.name!}</td>
+                                <td><#if imgAlias?? && (imgAlias?length > 1)>${imgAlias!}<#else>${imgName!}</#if></td>
+                                <td><input type="file" name="file" class="layui-upload-file">
+                                    <input type="hidden" attrId="${specification.id?c}" imgInput="true"
+                                           index="${imgName_index}" value="${img!}">
+                                    <img style="height: 40px" onclick="showImg(this)"
+                                         <#if (img?length > 1)>src="${img!}"</#if>>
+                                </td>
+                            </tr>
+                            </#list>
+                        </#if>
+                    </#list>
+                </tbody>
+            </table>
+        </#if>
+        </div>
+        <div>
+        <#if (specifications?size >= 1)>
+            <fieldset class="layui-elem-field layui-field-title" id="skuSelected">
+                <legend>已选择sku</legend>
+            </fieldset>
+        </#if>
+            <table class="layui-table" id="_table">
+                <thead id="tHead">
+                <#if (specifications?size >= 1)>
+                    <#if skus??>
+                    <th style="width: 15%;">名称
+                        <input type="text" class="layui-input" style="display: inline;width: 50%;">
+                        <a onclick="setAll(this,'skuName')">
+                            <i class="layui-icon" style="font-size: 20px;">&#xe620;</i>
+                        </a>
+                    </th>
+                    <th style="width: 12%;">库存
+                        <input type="text" onkeyup="numberCheck(this)" class="layui-input"
+                               style="display: inline;width: 50%;" >
+                        <a onclick="setAll(this,'skuStock')">
+                            <i class="layui-icon" style="font-size: 20px;">&#xe620;</i>
+                        </a>
+                    </th>
+                    <th style="width: 15%;">价格
+                        <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                               style="display: inline;width: 50%;">
+                        <a onclick="setAll(this,'skuPrice')">
+                            <i class="layui-icon" style="font-size: 20px;">&#xe620;</i>
+                        </a>
+                    </th>
+                    <th style="width: 15%;">活动价
+                        <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                               style="display: inline;width: 50%">
+                        <a onclick="setAll(this,'skuActivityPrice')">
+                            <i class="layui-icon" style="font-size: 20px;">&#xe620;</i>
+                        </a>
+                    </th>
+                    <th style="width: 12%;">重量
+                        <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                               style="display: inline;width: 50%;">
+                        <a onclick="setAll(this,'skuWeight')">
+                            <i class="layui-icon" style="font-size: 20px;">&#xe620;</i>
+                        </a>
+                    </th>
+                    <th style="width: 15%;">重量单位</th>
+                    <th id="addTh">操作</th>
+                    </#if>
+                <#else>
+                <tr>
+                    <th>名称</th>
+                    <th>库存</th>
+                    <th>价格</th>
+                    <th>活动价</th>
+                    <th>重量</th>
+                    <th>重量单位</th>
+                    <th>操作</th>
+                </tr>
+                </#if>
+                </thead>
+                <tbody id="tBody">
+                <#--如果编辑则遍历所有sku-->
+                    <#if skus??>
+                        <#list skus as sku>
+                        <tr>
+                            <td>
+                                <input type="text" name="skus[${sku_index}].name" class="layui-input"
+                                       style="width: 100%;" column="skuName"
+                                       lay-verify="text" value="${sku.name}">
+                            </td>
+                            <td>
+                                <input type="text" onkeyup="numberCheck(this)" name="skus[${sku_index}].stock"
+                                       class="layui-input"
+                                       column="skuStock"
+                                       style="width: 100%;" lay-verify="required" value="${sku.stock?c}">
+                            </td>
+                            <td>
+                                <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                                       name="skus[${sku_index}].price"
+                                       column="skuPrice"
+                                       style="width: 80%;display: inline;" lay-verify="required" value=${sku.price?c}>&nbsp;元
+                            </td>
+                            <td>
+                                <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                                       name="skus[${sku_index}].activityPrice"
+                                       column="skuActivityPrice"
+                                       style="width: 80%;display: inline;" lay-verify="required"
+                                       value=${sku.activityPrice?c}>&nbsp;元
+                            </td>
+                            <td>
+                                <input type="text" onkeyup="decimalCheck(this)" name="skus[${sku_index}].weight"
+                                       class="layui-input"
+                                       column="skuWeight"
+                                       style="width: 100%;" lay-verify="required" value=${sku.weight?c}>
+                            </td>
+                            <td>
+                                <select name="skus[${sku_index}].weightUnit">
+                                    <option <#if sku.weightUnit == 0>selected</#if> value="0">千克(kg)</option>
+                                </select>
+                            </td>
+                            <#if sku.attrElementIds?length gt 1>
+                            <#list sku.attrElementIds?split(",") as elementId>
+                                <#list attributes as attribute>
+                                    <#if attribute.attributeId?? && attribute.attributeId == elementId>
+                                        <td><span>${attribute.elementAlias}</span>
+                                            <input type="hidden" value="${attribute.elementAlias}"
+                                                   name="skus[${sku_index}].elementAlias"/>
+                                            <input type="hidden" value="${attribute.element}"
+                                                   name="skus[${sku_index}].element"/>
+                                            <input type="hidden" value="${attribute.mapkeyId?c}"
+                                                   name="skus[${sku_index}].specId"/>
+                                        </td>
+                                    </#if>
+                                </#list>
+                            </#list>
+                            </#if>
+                            <td></td>
+                        </tr>
+                        </#list>
+                <#elseif (specifications?size < 1)>
+                <tr>
+                    <td style="width: 15%;">
+                        <input type="text" name="skus[0].name" class="layui-input" style="width: 100%;" value="" lay-verify="text">
+                    </td>
+                    <td style="width: 15%;">
+                        <input type="text" onkeyup="numberCheck(this)" name="skus[0].stock"
+                               class="layui-input" style="width: 100%;" lay-verify="required">
+                    </td>
+                    <td style="width: 15%;">
+                        <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                               name="skus[0].price" style="width: 100%;" lay-verify="required">
+                    </td>
+                    <td style="width: 15%;">
+                        <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                               name="skus[0].activityPrice" style="width: 100%;" lay-verify="required">
+                    </td>
+                    <td style="width: 15%;">
+                        <input type="text" onkeyup="decimalCheck(this)" class="layui-input"
+                               name="skus[0].weight" style="width: 100%;" lay-verify="required">
+                    </td>
+                    <td style="width: 15%;">
+                        <select name="skus[0].weightUnit">
+                            <option value="0">千克(kg)</option>
+                        </select>
+                    </td>
+                </tr>
+                </#if>
+                </tbody>
+            </table>
+        </div>
+        <div class="layui-form-item" style="text-align:right">
+            <div class="layui-input-block">
+                <button class="layui-btn" type="button" lay-submit lay-filter="formSubmit" id="_submit">
+                    立即提交
+                </button>
+            </div>
+        </div>
+    </form>
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/js/mustache.js"></script>
+    <script src="${basePath}/static/js/common.js"></script>
+    <script>
+        //定义一些通用表格元素
+        var thName = '<th style="width: 15%;">名称<input type="text" class="layui-input" style="display: inline;width: 50%;" id="allName">' +
+                '<a onclick="setAll(this,\'skuName\')"><i class="layui-icon" style="font-size: 20px;">&#xe620;</i></a></th>';
+        var thStock = '<th style="width: 12%;">库存<input type="text" onkeyup="numberCheck(this)" class="layui-input"  style="display: inline;width: 50%;" id="allStock">' +
+                '<a onclick="setAll(this,\'skuStock\')"><i class="layui-icon" style="font-size: 20px;">&#xe620;</i></a></th>';
+        var thPrice = '<th style="width: 15%;">价格<input type="text"  onkeyup="decimalCheck(this)" class="layui-input"  style="display: inline;width: 50%;" id="allPrice">' +
+                '<a onclick="setAll(this,\'skuPrice\')"><i class="layui-icon" style="font-size: 20px;">&#xe620;</i></a></th>';
+        var thActivityPrice = '<th style="width: 15%;">活动价<input type="text"  onkeyup="decimalCheck(this)" class="layui-input" style="display: inline;width: 50%;"' +
+                ' id="allActivityPrice"> <a onclick="setAll(this,\'skuActivityPrice\')"><i class="layui-icon" style="font-size: 20px;">&#xe620;</i></a></th>';
+        var thWeight = '<th style="width: 12%;">重量<input type="text" onkeyup="decimalCheck(this)" class="layui-input"  style="display: inline;width: 50%;" id="allStock">' +
+                '<a onclick="setAll(this,\'skuWeight\')"><i class="layui-icon" style="font-size: 20px;">&#xe620;</i></a></th>';
+        var thWeightUnit = '<th style="width: 15%;">重量单位</th>';
+        var thOperating = '<th>操作</th>';
+        /*****************************************************************************/
+        //所有名称集合
+        var allNameArray = [];
+        var specDiv = $("div[specification='true']");
+        specDiv.each(function (index, div) {
+            var specName = $(div).prev().html();
+            var ic = $(div).find("input[type='checkbox']:checked");
+            if(ic.length > 0){
+                allNameArray.push(specName);
+            }
+        })
+        //如果为修改，则生成表头
+        var addTh = $("#addTh");
+        if (addTh.length > 0) {
+            $(allNameArray).each(function (index, data) {
+                addTh.before("<th>" + data + "</th>");
+            })
+        }
+        //图片上传
+        layui.use('upload', function () {
+            layui.upload({
+                url: '${basePath}/upload/specificationSmallImage'
+                , ext: 'jpg|png'
+                , success: function (res, input) {
+                    var _inp = $($(input).parent().parent());
+                    _inp.next().next().attr("src", res.url);
+                    _inp.next().val(res.url);
+                }
+            });
+        })
+        //提交表单
+        layui.use(['form', 'element'], function () {
+            var nowChecked = $("input:checked").length;
+            if (nowChecked >= 1) {
+                initName();
+            }
+            var form = layui.form();
+            var element = layui.element();
+            var msg = "";
+            var url = "${basePath}/admin/sku/editSku";
+            var lock = false;
+            form.on('checkbox(select)', function (data) {
+            });
+            //每选中一个规格就给他一个name，取消选择删除name
+            $("#showTable").click(function () {
+                initName();
+                if (nowChecked < 1) {
+                    showSkus();
+                } else {
+                    layer.confirm('确定将清空所有sku数据！', {
+                        btn: ['确定', '取消'] //按钮
+                    }, function () {
+                        //点击确定
+                        showSkus();
+                        layer.closeAll();
+                    }, function () {
+                        //点击取消
+                    });
+                }
+
+            })
+            function showSkus() {
+                //重新获取当前已选项
+                nowChecked = $("input:checked").length;
+                //如果没有选择就删除全部
+                if ($("input:checked").length < 1) {
+                    $("#tHead").empty();
+                    $("#tBody").empty();
+                    var imgs = $("#imgTBody").children();
+                    imgs.each(function (imgIndex, img) {
+                        $(img).attr("hidden", "true");
+                    });
+                    //隐藏所有图片选项
+                    return;
+                }
+                //所有规格项名称
+                var allItemNameArr = [];
+                //所有规格项
+                var allItemDivArr = [];
+                //所有选项
+                var allItemDiv = $("div [specification=true]");
+                //所有已选项的ID和值
+                allItemDiv.each(function (divIndex, div) {
+                    var allItemArr = [];
+                    var allItems = $(div).children(":checked");
+                    if (allItems.length >= 1) {
+                        allItemNameArr.push($(div).prev().text());
+                    }
+                    allItems.each(function (itemIndex, item) {
+                        allItemArr.push(item);
+                    });
+                    if (allItemArr.length >= 1) {
+                        allItemDivArr.push(allItemArr);
+                    }
+                })
+                //首先遍历表头
+                var tHead = "";
+                var tBody = "";
+
+                tHead += '<tr>' + thName + thStock + thPrice + thActivityPrice + thWeight + thWeightUnit;
+                //遍历规格名称到表头
+                $(allItemNameArr).each(function (itemNameIndex, itemName) {
+                    tHead += '<th>' + itemName + '</th>';
+                })
+                tHead += thOperating + '</tr>';
+                //计算所有sku并遍历到表格中
+                var allSku = combine(allItemDivArr);
+                //遍历每行sku
+                $(allSku).each(function (skuIndex, sku) {
+                    //反转数组顺序，由于算法遍历出的sku是反向的
+                    sku.reverse();
+                    var tdName = '<td><input type="text" class="layui-input" style="width: 100%;" lay-verify="text"  column="skuName" name="skus[' + skuIndex + '].name"></td>';
+                    var tdStock = '<td><input type="text" onkeyup="numberCheck(this)" class="layui-input" style="width: 100%;" lay-verify="required" column="skuStock" name="skus[' + skuIndex + '].stock"></td>';
+                    var tdPrice = '<td><input type="text" onkeyup="decimalCheck(this)"  class="layui-input" style="width: 80%;display: inline;" lay-verify="required"  column="skuPrice" name="skus[' + skuIndex + '].price">&nbsp;元</td>';
+                    var tdActivityPrice = '<td><input type="text" onkeyup="decimalCheck(this)" class="layui-input" style="width: 80%;display: inline;" lay-verify="required" column="skuActivityPrice" name="skus[' + skuIndex + '].activityPrice">&nbsp;元</td>';
+                    var tdWeight = '<td><input type="text" onkeyup="decimalCheck(this)" class="layui-input" style="width: 100%;" lay-verify="required" column="skuWeight" name="skus[' + skuIndex + '].weight"></td>';
+                    var tdWeightUnit = '<td><select name="skus[' + skuIndex + '].weightUnit"><option selected value="0">千克(kg)</option><option value="1">克(g)</option> <option value="2">毫克(mg)</option></select></td>';
+                    var tdOperating = '<td></td>';
+                    var tr = '<tr>' + tdName + tdStock + tdPrice + tdActivityPrice + tdWeight + tdWeightUnit;
+                    //插入每个选项的值
+                    $(sku).each(function (itemIndex, item) {
+                        var elementAlias = $(item).attr("title");
+                        var specId = $(item).prev().val();
+                        var element = $(item).attr("value");
+                        tr += '<td><span >' + elementAlias + '</span><input type="hidden" value="' + elementAlias + '" name="skus[' + skuIndex + '].elementAlias"/><input type="hidden" value="' + element + '" name="skus[' + skuIndex + '].element"/><input type="hidden" value="' + specId + '" name="skus[' + skuIndex + '].specId"/></td>';
+                    })
+                    tr += tdOperating + '</tr>';
+                    tBody += tr;
+                })
+                $("#tHead").html(tHead);
+                $("#tBody").html(tBody);
+                //展示所有图片选项
+                var checkeds = $("input:checked");
+                var imgs = $("#imgTBody").children();
+                imgs.each(function (imgIndex, img) {
+                    //然后找到已选项的id和值与img进行对比。如果一直则取消隐藏
+                    var imgId = $(img).attr("attrId");
+                    var imgValue = $(img).attr("imgTable");
+                    var imgAlias = $(img).children()[1];
+                    checkeds.each(function (checkedIndex, checked) {
+                        var itemId = $(checked).prev().val();
+                        var itemValue = $(checked).val();
+                        var itemAlias = $(checked).attr("title");
+                        if (itemId == imgId && itemValue == imgValue) {
+                            $(imgAlias).text(itemAlias);
+                            $(img).removeAttr("hidden");
+                            return false;
+                        } else {
+                            $(img).attr("hidden", "true");
+                        }
+                    })
+                })
+                form.render();
+            }
+
+            /**
+             * 笛卡尔积算法
+             * @param arr
+             * @returns {Array}
+             */
+            function combine(arr) {
+                var r = [];
+                (function f(t, a, n) {
+                    if (n == 0) return r.push(t);
+                    for (var i = 0; i < a[n - 1].length; i++) {
+                        f(t.concat(a[n - 1][i]), a, n - 1);
+                    }
+                })([], arr, arr.length);
+                return r;
+            }
+            form.verify({text:function (value) {
+                if(value.length < 1){
+                    return "必填项不能为空"
+                }
+                var flag = legalJudgement(value);
+                if(!flag){
+                    return "包含非法字符！"
+                }
+            }})
+            //监听提交
+            form.on('submit(formSubmit)', function (data) {
+                if (!lock) {
+                    lock = true;
+                    $.ajax({
+                        url: url,
+                        traditional: true,
+                        data: $("#myForm").serialize(),
+                        type: "POST",
+                        success: function (data) {
+                            var d = JSON.parse(data);
+                            if (d.success) {
+                                //成功添加
+                                window.parent.location.reload();
+                            } else {
+                                msg = d.message;
+                                lock = false;
+                                layer.msg(msg);
+                            }
+                        },
+                        error: function () {
+                            lock = false;
+                            msg = "异常错误！！！";
+                            layer.msg(msg);
+                        }
+                    });
+                }
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+        });
+        //小数后两位
+        function decimalCheck(obj) {
+            if (/^\d+\.?\d{0,2}$/.test(obj.value)) {
+                obj.value = obj.value;
+            } else {
+                obj.value = obj.value.substring(0, obj.value.length - 1);
+            }
+        }
+        //只允许整数
+        function numberCheck(t) {
+            var num = t.value;
+            var re = /^\d*$/;
+            if (!re.test(num)) {
+                isNaN(parseInt(num)) ? t.value = 0 : t.value = parseInt(num);
+            }
+        }
+        function showImg(img) {
+            layer.open({
+                type: 1,
+                title: false,
+                closeBtn: 0,
+                area: ['450', '300px'],
+                skin: 'layui-layer-nobg', //没有背景色
+                shadeClose: true,
+                content: '<img style="width: 500px" src="' + $(img).attr("src") + '">'
+            });
+        }
+        //设置所有选项
+        function setAll(all, name) {
+            layui.use('layer', function () {
+                var layer = layui.layer;
+                layer.msg('', {
+                    time: 2000
+                    , btn: ['应用到全部sku', '应用到未填写sku']
+                    , yes: function (index) {
+                        var value = $(all).prev().val();
+                        $("input[column='" + name + "']").val(value);
+                        layer.close(index);
+                    },
+                    btn2: function (index) {
+                        var value = $(all).prev().val();
+                        $("input[column='" + name + "']").each(function (n, data) {
+                            if ($(data).val().length < 1) {
+                                $(data).val(value);
+                            }
+                        })
+                        layer.close(index);
+                    }
+                });
+            });
+        }
+        /**
+         * 设置规格别名，并替换全局
+         * @param input 输入修改名的input
+         */
+        function alias(input) {
+            var checkBoxInput = $(input).prev().prev().prev().prev();
+            //获取到改变的名称的规格项的id
+            var specId = checkBoxInput.prev().val();
+            var element = checkBoxInput.val();
+            var elementAlias = checkBoxInput.next().next();
+            //设置的规格别名
+            var aliasValue = $(input).val();
+            //如果修改为空，那么则恢复原名
+            if (aliasValue.length <= 0) {
+                aliasValue = checkBoxInput.val();
+            }
+            checkBoxInput.attr("title", aliasValue);
+            var children = checkBoxInput.next().children()[0];
+            $(children).text(aliasValue);
+            elementAlias.val(aliasValue);
+            //然后要改变已选择和图片选项中的名称
+            var tableInput = $("#tBody input[value='" + specId + "']");
+            //改变sku中的规格值
+            tableInput.each(function (index, data) {
+                //找到显示值得span
+                var valueInput = $(data).prev();
+                if ($(valueInput).val() == element) {
+                    $(data).siblings("span").text(aliasValue);
+                }
+            });
+            //修改图片选项别名
+            var img = $("tr[imgTable='" + element + "'][attrId='" + specId + "']");
+            $(img.children()[1]).text(aliasValue);
+            $(input).toggle();
+        }
+        //展示修改别名的input
+        function showAliasInput(tab) {
+            $($(tab).next()).toggle();
+        }
+        //初始化name
+        function initName() {
+            //给所有已选选项一个name
+            var checked = $("input:checked");
+            var checkBox = $("input[type='checkbox']");
+            var imgInputs = $("input[imginput='true']");
+            //移除所有选项的name
+            checkBox.each(function (index, spec) {
+                $(spec).removeAttr("name");
+                $(spec).next().next().removeAttr("name");
+                $(spec).prev().removeAttr("name");
+            });
+            imgInputs.each(function (imgIndex, imgInp) {
+                $(imgInp).removeAttr("name");
+            })
+            //添加选中选项的name
+            checked.each(function (index, spec) {
+                $(spec).attr("name", "specifications[" + index + "].element")
+                $(spec).next().next().attr("name", "specifications[" + index + "].alias")
+                $(spec).prev().attr("name", "specifications[" + index + "].attributeId");
+                var img = $("tr[imgTable='" + $(spec).val() + "'][attrId='" + $(spec).prev().val() + "']");
+                if (img.length >= 1) {
+                    var imgInp = $($(img[0]).children()[2]).children()[1];
+                    $(imgInp).attr("name", "specifications[" + index + "].elementImg");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

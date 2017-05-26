@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd">
+  
+	<!-- 扫描 controller -->
+	<context:component-scan base-package="com.xinqi.graduationdesign.controller"/>
+	<!--在使用spring mvc时，实际上是两个spring容器：
+	1，dispatcher-servlet.xml(servlet-context.xml) 是一个，我们的controller就在这里，所以这个里面也需要注入属性文件
+	2，applicationContext.xml(spring-framework.xml) 是另外一个，也需要注入属性文件-->
+	<context:property-placeholder location="classpath:properties/constant.properties"/>
+
+	<!-- 上传文件配置 -->
+	<bean id="multipartResolver"
+		  class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+
+	<!-- 定义视图解析器 -->
+	<!-- 设置freeMarker的配置文件路径 -->
+	<bean id="freemarkerConfiguration"
+		  class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="location" value="classpath:properties/freemarker.properties" />
+	</bean>
+
+	<!-- 配置freeMarker的模板路径 -->
+	<bean id="freemarkerConfig"
+		  class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+		<property name="templateLoaderPath" value="/WEB-INF/ftl/"/>
+		<property name="freemarkerSettings" ref="freemarkerConfiguration" />
+		<property name="freemarkerVariables">
+			<map>
+				<entry key="xml_escape" value-ref="fmXmlEscape" />
+			</map>
+		</property>
+
+	</bean>
+
+	<bean id="fmXmlEscape" class="freemarker.template.utility.XmlEscape" />
+
+	<!-- 配置freeMarker视图解析器 -->
+	<bean id="viewResolver"
+		  class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+		<property name="viewClass"
+				  value="org.springframework.web.servlet.view.freemarker.FreeMarkerView" />
+		<property name="contentType" value="text/html; charset=utf-8" />
+		<property name="cache" value="true" />
+		<property name="suffix" value=".html" />
+		<property name="order" value="0" />
+		<property name="exposeRequestAttributes" value="true" />
+		<property name="exposeSessionAttributes" value="true" />
+		<property name="exposeSpringMacroHelpers" value="true" />
+		<property name="requestContextAttribute" value="request" />
+		<property name="attributesMap">
+			<map>
+				<entry key="cutWords">
+					<bean class="com.xinqi.graduationdesign.utils.directive.CutWords"/>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+
+	<!-- 重定向视图控制器标签 -->
+	<mvc:redirect-view-controller path="/redirect"
+		redirect-url="/status" context-relative="true" status-code="301"
+		keep-query-params="true" />
+	
+	<mvc:default-servlet-handler />
+	
+	<!-- 状态控制器标签 -->
+	<mvc:status-controller path="/status" status-code="200" />
+	
+	<!-- 带状态的视图控制器标签 -->
+	<mvc:view-controller path="/error/**" status-code="200" />
+
+	<!-- 配置静态资源，直接映射到对应的文件夹，DispatcherServlet 不处理 -->
+	<mvc:resources mapping="/static/**" location="/WEB-INF/static/" />
+	<mvc:resources mapping="/frontStatic/**" location="/WEB-INF/frontStatic/" />
+	<mvc:resources mapping="/upload/**" location="/upload/" />
+
+	<!-- 网站图标，注意 ！favicon.ico 放在 webapp 目录 -->
+	<mvc:resources mapping="/favicon.ico" location="/favicon.ico" />
+
+	<!-- 获取ApplicationContext上下文 -->
+	<bean id="springContextHolder" class="com.xinqi.framework.spring.SpringContextHolder" />
+
+	<!-- KISSO 初始化 -->
+	<bean id="kissoInit" class="com.xinqi.kisso.web.WebKissoConfigurer" init-method="initKisso">
+		<property name="ssoPropPath" value="properties/sso.properties" />
+	</bean>
+
+	<mvc:interceptors>
+		<!-- SSO 拦截器 -->
+		<!-- path 对所有的请求拦截使用/**，对某个模块下的请求拦截使用：/myPath/* -->
+		<mvc:interceptor>
+			<mvc:mapping path="/admin/**" />
+			<mvc:mapping path="/sys/**" />
+			<bean class="com.xinqi.kisso.web.interceptor.SSOSpringInterceptor" />
+		</mvc:interceptor>
+		<!-- 权限拦截器 -->
+		<mvc:interceptor>
+			<mvc:mapping path="/admin/**" />
+			<mvc:mapping path="/sys/**" />
+			<bean class="com.xinqi.kisso.web.interceptor.SSOPermissionInterceptor">
+				<property name="authorization">
+					<bean class="com.xinqi.graduationdesign.service.impl.SysPermissionServiceImpl"/>
+				</property>
+				<property name="illegalUrl" value="/error/illegalAccess.html"/>
+			</bean>
+		</mvc:interceptor>
+		<bean class="com.xinqi.framework.spring.DataLoadingInterceptor" />
+	</mvc:interceptors>
+	<mvc:annotation-driven>
+		<!-- 编码转换 -->
+		<mvc:message-converters>
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/plain;charset=UTF-8</value>
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+</beans>

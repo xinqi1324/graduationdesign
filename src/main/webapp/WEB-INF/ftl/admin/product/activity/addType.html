@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/select2/select2.min.css">
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/js/jquery.form.js"></script>
+    <script src="${basePath}/static/js/common.js"></script>
+    <script src="${basePath}/static/plugins/select2/select2.full.js"></script>
+    <script src="${basePath}/static/plugins/select2/zh-CN.js"></script>
+    <script src="${basePath}/static/plugins/select2/select2tree.js"></script>
+    <style>
+        @font-face {
+            font-family: 'FontAwesome';
+            src: url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.eot?v=4.3.0');
+            src: url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.3.0') format('embedded-opentype'), url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.woff2?v=4.3.0') format('woff2'),
+            url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.woff?v=4.3.0') format('woff'),
+            url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.ttf?v=4.3.0') format('truetype'), url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.svg?v=4.3.0#fontawesomeregular') format('svg');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        .glyphicon-chevron-right:before {
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: large;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transform: translate(0, 0);
+            content: "\f105";
+        }
+
+        .glyphicon-chevron-down:before {
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: large;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transform: translate(0, 0);
+            content: "\f107";
+        }
+
+        .layui-form-label {
+            width: auto;
+        }
+
+        .layui-form {
+            margin: 10px 30px 0 10px;
+        }
+
+        .select2 {
+            margin-top: 5px;
+        }
+
+        .layui-unselect {
+            display: none;
+        }
+    </style>
+</head>
+<body class="white-bg">
+<form class="layui-form" id="activity_form">
+    <input hidden name="activityId" value="${id?c}">
+    <div class="layui-form-item">
+        <label class="layui-form-label">请选择类型</label>
+        <div class="layui-input-block">
+            <select id="select_type" lay-verify="required" name="type">
+                <option value=""></option>
+            <#list types as type>
+                <#if type.getKey() != 0>
+                    <option value="${type.getKey()}">${type.getDesc()}</option>
+                </#if>
+            </#list>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item" id="showDiv">
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit="" lay-filter="submit_type" type="button">立即提交</button>
+        </div>
+    </div>
+</form>
+<script type="text/template" id="showProductCategory">
+    //<!--
+    <label class="layui-form-label">请选择商品分类</label>
+    <div class="layui-input-block">
+        <select id="select_productCategory" lay-verify="required" name="objectId">
+            <option value=""></option>
+        <#list productCategories as productCategory>
+             <#if productCategory.parentId == 0>
+            <option value="${productCategory.id?c}">${productCategory.name}</option>
+        <#else>
+            <option value="${productCategory.id?c}"
+                    parent="${productCategory.parentId?c}">${productCategory.name}</option>
+        </#if>
+        </#list>
+        </select>
+    </div>
+     //-->
+</script>
+<script type="text/template" id="showBrand">
+    //<!--
+    <label class="layui-form-label">请选择商品品牌</label>
+    <div class="layui-input-block">
+        <select id="select_brandId" lay-verify="required" name="objectId">
+            <option value=""></option>
+        <#list tbBrands as brand>
+            <option value="${brand.id?c}">${brand.name}</option>
+        </#list>
+        </select>
+    </div>
+     //-->
+</script>
+
+<script type="text/javascript">
+    var layer;
+    var form;
+    $(function () {
+        $("#select_type").select2({
+            placeholder: '请选择类型',
+            width: "100%",
+            language: "zh-CN",
+            theme: "classic",
+        });
+        $("#select_type").change(function () {
+            showDiv(this.value);
+        })
+    })
+
+    layui.use(['form', 'layer'], function () {
+        layer = layui.layer;
+        form = layui.form();
+        form.on('submit(submit_type)', function (data) {
+            var form = data.form;
+            var activityObject = $(form).serializeJSON();
+            //提交表单
+            $.ajax({
+                data: activityObject,
+                dataType: "json",
+                type: "post",
+                url: "${basePath}/admin/product/activity/doAddObject",
+                success: function (data) {
+                    if (data.success) {
+                        window.parent.location.reload();
+                    } else {
+                        layer.msg(data.message);
+                    }
+                },
+                error: function () {
+                    layer.msg("未知错误！");
+                }
+            })
+        });
+
+    });
+
+    function showDiv(value) {
+        var content;
+        if (value == 1) {
+            content = $("#showProductCategory").html();
+            content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+            $("#showDiv").html(content);
+            //展示分类列表
+            $("#select_productCategory").select2tree({
+                placeholder: '请选择商品分类',
+                allowClear: true,
+                width: "97%",
+                language: "zh-CN",
+                theme: "classic"
+            });
+
+        } else if (value == 2) {
+            content = $("#showBrand").html();
+            content = content.replace(/(\/\/\<!\-\-)|(\/\/\-\->)/g, "");
+            $("#showDiv").html(content);
+            //展示品牌列表
+            $("#select_brandId").select2({
+                placeholder: '请选择商品品牌',
+                allowClear: true,
+                width: "97%",
+                language: "zh-CN",
+                theme: "classic"
+            });
+        }
+    }
+
+    //将表单封装为json
+    $.fn.serializeJSON = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+</script>
+</body>
+</html>

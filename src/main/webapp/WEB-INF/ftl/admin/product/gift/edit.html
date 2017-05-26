@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<#include "/admin/common/form_header.html" />
+    <link rel="stylesheet" type="text/css" href="${basePath}/static/plugins/select2/select2.min.css">
+    <script src="${basePath}/static/js/jquery-2.1.1.js"></script>
+    <script src="${basePath}/static/plugins/layui/layui.js"></script>
+    <script src="${basePath}/static/plugins/select2/select2.full.js"></script>
+    <script src="${basePath}/static/plugins/select2/select2tree.js"></script>
+    <script src="${basePath}/static/plugins/select2/zh-CN.js"></script>
+    <script src="${basePath}/frontStatic/js/jsOperation.js"></script>
+    <script src="${basePath}/static/js/common.js"></script>
+    <style>
+        @font-face {
+            font-family: 'FontAwesome';
+            src: url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.eot?v=4.3.0');
+            src: url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.3.0') format('embedded-opentype'), url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.woff2?v=4.3.0') format('woff2'),
+            url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.woff?v=4.3.0') format('woff'),
+            url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.ttf?v=4.3.0') format('truetype'), url('${basePath}/static/font-awesome/fonts/fontawesome-webfont.svg?v=4.3.0#fontawesomeregular') format('svg');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        .glyphicon-chevron-right:before {
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: large;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transform: translate(0, 0);
+            content: "\f105";
+        }
+
+        .glyphicon-chevron-down:before {
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: large;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transform: translate(0, 0);
+            content: "\f107";
+        }
+        .layui-input-inline {
+            width: 70%;
+        }
+
+        .layui-input-inline input {
+            height: 35px;
+        }
+
+        .search_div {
+            margin: 20px;
+        }
+
+        .search_div label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="white-bg">
+<div class="search_div">
+    <label>请选择品牌：</label>
+    <select class="brand_select" id="brand_select">
+        <option value=""></option>
+    <#list brands as brand>
+        <option value="${brand.id?c}">${brand.name}</option>
+    </#list>
+    </select>
+</div>
+<div class="search_div">
+    <label>请选择分类：</label>
+    <select class="category_select" id="productCategory_select">
+        <option value=""></option>
+    <#list productCategories as productCategory>
+        <#if productCategory.parentId == 0>
+            <option value="${productCategory.id?c}">${productCategory.name}</option>
+        <#else>
+            <option value="${productCategory.id?c}"
+                    parent="${productCategory.parentId?c}">${productCategory.name}</option>
+        </#if>
+    </#list>
+    </select>
+</div>
+<div class="search_div">
+    <label>请输入查找的sku名称：</label>
+    <div class="layui-input-inline">
+        <input type="text" placeholder="请输入sku名称" class="layui-input" id="name_input">
+    </div>
+</div>
+<div class="search_div">
+    <button class="layui-btn layui-btn-small layui-btn-normal" style="width: 80px;" onclick="showTable(1)">查询</button>
+</div>
+<div class="search_div">
+    <table class="layui-table">
+        <colgroup>
+            <col width="300">
+            <col width="30">
+            <col>
+        </colgroup>
+        <thead>
+        <th>sku名称</th>
+        <th>操作</th>
+        </thead>
+        <tbody id="sku_body">
+
+        </tbody>
+    </table>
+    <div id="pager"></div>
+</div>
+<div class="search_div">
+    <button class="layui-btn layui-btn-small layui-btn-normal" style="width: 80px;float: right;" onclick="closeWindow()">完成</button>
+</div>
+<script type="text/javascript">
+    //每页展示的个数
+    var pageCount = 5;
+    var layer;
+    var layPage;
+    var nowPage = 1;
+    var skuArr = [];
+    $(document).ready(function () {
+        $(".brand_select").select2({
+            placeholder: '请选择品牌',
+            allowClear: true,
+            width: "80%",
+            language: "zh-CN",
+            theme: "classic"
+        });
+        $(".category_select").select2tree({
+            placeholder: '请选择分类',
+            allowClear: true,
+            width: "80%",
+            language: "zh-CN",
+            theme: "classic"
+        });
+    });
+
+    layui.use(['layer', 'laypage'], function () {
+        layPage = layui.laypage;
+        layer = layui.layer;
+    });
+    function closeWindow() {
+        window.parent.location.reload();
+    }
+    function showTable(pageNum) {
+        var brandId = $("#brand_select").val();
+        var productCategoryId = $("#productCategory_select").val();
+        var skuName = $("#name_input").val();
+        if (brandId.length < 1 && productCategoryId.length < 1 && skuName.length < 1) {
+            layer.msg("请至少选择或输入一种查询类型！")
+            return;
+        }
+        $.ajax({
+            data: {brandId: brandId, productCategoryId: productCategoryId, skuName: skuName},
+            type: "post",
+            dataType: "JSON",
+            url: "${basePath}/admin/product/gift/searchSku",
+            success: function (data) {
+                if (data.success) {
+                    skuArr = data.data;
+                    showTbody(skuArr, pageNum);
+                } else {
+                    layer.msg(data.message);
+                }
+            },
+            error: function () {
+                layer.msg("未知错误！");
+            }
+        })
+    }
+    function showTbody(skuArr, pageNum) {
+        var pages;
+        if (skuArr.length % pageCount > 0) {
+            pages = skuArr.length / pageCount + 1;
+        } else {
+            pages = skuArr.length / pageCount;
+        }
+        layPage({
+            cont: 'pager'
+            , curr: pageNum
+            , pages: pages //总页数
+            , groups: pageCount //连续显示分页数
+            , skin: '#1E9FFF'
+            , jump: function (obj, first) {
+                $("#sku_body").empty();
+                nowPage = obj.curr;
+                for (var i = (nowPage - 1) * 5; i < mul(nowPage, pageCount); i++) {
+                    var sku = skuArr[i];
+                    if (sku == undefined) {
+                        return;
+                    }
+                    var name;
+                    if (sku.name.length > 30) {
+                        name = sku.name.substring(0, 30) + "...";
+                    } else {
+                        name = sku.name;
+                    }
+                    var attrElementIds = "";
+                    if(typeof(sku.attrElementIds) != "undefined"){
+                        attrElementIds = sku.attrElementIds;
+                    }
+                    var tr = "<tr><td title='" + sku.name + "'>" + name + "</td>" +
+                            "<td><a onclick='addSku(\"" + attrElementIds + "\",\"" + sku.productId + "\")'>添加</a></td></tr>"
+                    $("#sku_body").append(tr);
+                }
+            }
+        });
+    }
+    function addSku(attrElementIds, productId) {
+        if (productId == undefined || productId.length <= 0) {
+            layer.msg("找不到商品");
+            return;
+        }
+        $.ajax({
+            data: {attrElementIds: attrElementIds, productId: productId},
+            type: "post",
+            dataType: "json",
+            url: "${basePath}/admin/product/gift/addGift",
+            success: function (data) {
+                if (data.success) {
+                    $(skuArr).each(function (index, sku) {
+                        if (productId == sku.productId && sku.attrElementIds == attrElementIds) {
+                            skuArr.splice(index,1);
+                            return false;
+                        }
+                    })
+                    showTbody(skuArr, nowPage);
+                } else {
+                    layer.msg(data.message);
+                }
+            },
+            error: function () {
+                layer.msg("未知错误！");
+            }
+        })
+    }
+
+</script>
+</body>
+</html>
