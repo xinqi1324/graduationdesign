@@ -83,7 +83,31 @@
             });
         })
     });
-
+    layui.use(['jquery', 'layer'], function () {
+        var $ = layui.jquery, layer = layui.layer;
+        $("#disagree").click(function () {
+            layer.confirm('确定拒绝么？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                $.ajax({
+                    type: "POST",
+                    url: editUrl + "?id=${leave.id?c}&status=false" ,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.success) {
+                            window.parent.location.reload();
+                        } else {
+                            layer.alert(data.message, {icon: 2}, function (index) {
+                                layer.close(index);
+                            });
+                        }
+                    }
+                });
+            }, function () {
+                return;
+            });
+        })
+    });
 </script>
 </body>
 </html>

@@ -22,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -73,8 +74,6 @@ public class EmpController extends BaseController{
     public String insert(Model model, Long id ) {
         //角色列表
         EntityWrapper<SysRole> roleEntityWrapper = new EntityWrapper<SysRole>();
-        roleEntityWrapper.where("id!=" + UserType.ADMIN.key());
-        List<SysRole> sysRoles = roleService.selectList(roleEntityWrapper);
         //判断当前用户的角色，如果是部门经理只能添加自己部门
         Long currentUserId = getCurrentUserId();
         SysUser user = userService.selectById(currentUserId);
@@ -82,13 +81,22 @@ public class EmpController extends BaseController{
         EntityWrapper<PsysEmp> empEntityWrapper = new EntityWrapper<PsysEmp>();
         empEntityWrapper.where("userId=" + currentUserId);
         PsysEmp emp = empService.selectOne(empEntityWrapper);
-        List<PsysDept> depts = null;
+        List<PsysDept> depts = new ArrayList<PsysDept>();
         //查询当前账户所能添加的部门
         if(type == UserType.DEPARTMENT_MANAGER.key()){
             depts.add(deptService.selectById(emp.getDeptId()));
-        }else if(type ==UserType.HR.key() || type == UserType.GENERAL_MANAGER.key() || type == UserType.ADMIN.key()){
+            roleEntityWrapper.where("id=" + UserType.EMPLOYEE.key());
+        }else if(type == UserType.HR.key() ){
+            depts.add(deptService.selectById(emp.getDeptId()));
+            roleEntityWrapper.where("id=" + UserType.EMPLOYEE.key());
+        }else if(type == UserType.GENERAL_MANAGER.key()){
             depts = deptService.selectList(null);
+            roleEntityWrapper.where("id=" + UserType.EMPLOYEE.key()).and("id=" +UserType.DEPARTMENT_MANAGER.key());
+        }else if(type == UserType.ADMIN.key()){
+            depts = deptService.selectList(null);
+            roleEntityWrapper.where("id!=" + UserType.ADMIN.key());
         }
+        List<SysRole> sysRoles = roleService.selectList(roleEntityWrapper);
         model.addAttribute("sysRoles",sysRoles);
         model.addAttribute("depts",depts);
         //学历列表

@@ -1,0 +1,57 @@
+<#include "../common/framework.html" />
+<#macro breadcrumb>
+<li><a>功能管理</a></li><li class="active"><strong>个人信息</strong></li>
+</#macro>
+<#macro css>
+<link href="${basePath}/static/plugins/layui/css/layui.css" rel="stylesheet" media="all">
+<style>
+    .layui-form-label{
+        width: 120px;
+    }
+</style>
+</#macro>
+<#macro script>
+<script src="${basePath}/static/plugins/layui/layui.js"></script>
+<script>
+</script>
+</#macro>
+<@framework title="个人信息">
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>用户信息</legend>
+</fieldset>
+<div class="layui-form-item">
+    <label class="layui-form-label">登录名</label>
+    <div class="layui-input-inline">
+        <input type="text" value="${user.loginName}" autocomplete="off" class="layui-input" readonly>
+    </div>
+</div>
+<#if emp??>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>员工信息</legend>
+</fieldset>
+<div class="layui-form-item">
+    <label class="layui-form-label">员工名</label>
+    <div class="layui-input-inline">
+        <input type="text" value="${emp.name}" autocomplete="off" class="layui-input" readonly>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">员工职称</label>
+    <div class="layui-input-inline">
+        <input type="text" value="${sysRole.name}" autocomplete="off" class="layui-input" readonly>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">员工部门</label>
+    <div class="layui-input-inline">
+        <input type="text" value="${(psysDept.deptName)!"暂无部门"}" autocomplete="off" class="layui-input" readonly>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">员工创建日期</label>
+    <div class="layui-input-inline">
+        <input type="text" value="${emp.createDate?datetime}" autocomplete="off" class="layui-input" readonly>
+    </div>
+</div>
+</#if>
+</@framework>

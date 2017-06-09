@@ -1,12 +1,12 @@
 package com.xinqi.graduationdesign.controller.sys;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import com.xinqi.framework.controller.AjaxResult;
 import com.xinqi.graduationdesign.common.enums.UserType;
 import com.xinqi.graduationdesign.controller.BaseController;
-import com.xinqi.graduationdesign.entity.SysRole;
-import com.xinqi.graduationdesign.entity.SysUserRole;
-import com.xinqi.graduationdesign.service.ISysUserRoleService;
+import com.xinqi.graduationdesign.entity.*;
+import com.xinqi.graduationdesign.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,9 +19,6 @@ import com.xinqi.kisso.annotation.Action;
 import com.xinqi.kisso.annotation.Permission;
 import com.xinqi.kisso.common.encrypt.SaltEncoder;
 import com.baomidou.mybatisplus.plugins.Page;
-import com.xinqi.graduationdesign.entity.SysUser;
-import com.xinqi.graduationdesign.service.ISysRoleService;
-import com.xinqi.graduationdesign.service.ISysUserService;
 
 import java.util.List;
 
@@ -47,6 +44,10 @@ public class UserController extends BaseController {
 	@Autowired
 	private ISysUserRoleService userRoleService;
 
+	@Autowired
+	private IPsysEmpService empService;
+	@Autowired
+	private IPsysDeptService deptService;
 	@Permission("2001")
 	@RequestMapping("/list")
 	public String list(Model model) {
@@ -116,4 +117,20 @@ public class UserController extends BaseController {
 	public String setAvatar() {
 		return "/admin/user/avatar";
 	}
+
+	@Permission(action = Action.Skip)
+	@RequestMapping("/showUser")
+	public String showUser(Model model){
+		Long currentUserId = getCurrentUserId();
+		SysUser user = userService.selectById(currentUserId);
+		PsysEmp emp = empService.selectEmpByUserId(currentUserId);
+		PsysDept psysDept = deptService.selectById(emp.getDeptId());
+		SysRole sysRole = roleService.selectById(user.getType());
+		model.addAttribute("user",user);
+		model.addAttribute("emp",emp);
+		model.addAttribute("psysDept",psysDept);
+		model.addAttribute("sysRole",sysRole);
+		return "/admin/user/showUser";
+	}
+
 }
